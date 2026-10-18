@@ -5606,24 +5606,10 @@ function buildAC(el,vi,bi,ci,txt){
  titleEl.textContent=egwTitle;
  egwContainer.appendChild(titleEl);
  }
- var hlValAC=settings.highlights&&settings.highlights[key];
- if(hlValAC&&hlValAC.type==='sel'&&hlValAC.start>=0&&hlValAC.end>hlValAC.start){
- var hlColors={y:'rgba(255,213,0,.45)',g:'rgba(34,163,154,.30)',b:'rgba(30,120,220,.25)',p:'rgba(200,50,160,.25)'};
- var bgAC=hlColors[hlValAC.col]||hlColors.y;
- var hlIdx=egwBody.indexOf(hlValAC.text);
- if(hlIdx>=0){
- var bodyEl=mk('p','egw-body');
- bodyEl.innerHTML=egwBody+'<mark style="background:'+bgAC+';border-radius:2px;padding:1px 0">'+egwBody.slice(hlIdx,hlIdx+hlValAC.text.length)+'</mark>'+egwBody.slice(hlIdx+hlValAC.text.length);
- egwContainer.appendChild(bodyEl);
- } else {
- var bodyEl2=mk('p','egw-body');bodyEl2.textContent=egwBody;egwContainer.appendChild(bodyEl2);
- }
- } else {
- var bodyEl3=mk('p','egw-body');bodyEl3.textContent=egwBody;egwContainer.appendChild(bodyEl3);
- }
- if(_esS&&_esS.length>1){_esS.slice(1).forEach(function(q){
+ egwContainer.appendChild(mkEgwBody(egwBody,0,key));
+ if(_esS&&_esS.length>1){_esS.slice(1).forEach(function(q,qi){
  if(q.title){var t2=mk('div','');t2.style.cssText='font-size:10px;font-weight:700;color:var(--teal2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;font-family:Gilroy,sans-serif';t2.textContent=q.title;egwContainer.appendChild(t2);}
- var b2=mk('p','egw-body');b2.textContent=q.body;egwContainer.appendChild(b2);});}
+ egwContainer.appendChild(mkEgwBody(q.body,qi+1,key));});}
  panes[1].appendChild(egwContainer);
  } else {
  // Try fetching from EGW writings API
@@ -6193,6 +6179,68 @@ function navToRef(ref){
 }
 
 // \u2500\u2500 VERSE ACTION MENU \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+// ── EGW quote highlighting / underlining (per quote, offsets in its text) ──
+var _egwSel=null;
+var _EGW_HL={y:'rgba(255,213,0,.45)',g:'rgba(34,163,154,.30)',b:'rgba(30,120,220,.25)',p:'rgba(208,64,160,.28)',r:'rgba(224,48,60,.28)'};
+var _EGW_UL={y:'#ffd900',g:'#22a39a',b:'#1e82dc',p:'#d040a0',r:'#e0303c',k:'#222'};
+function _egwMarks(key,idx){var h=settings.egwHl&&settings.egwHl[key];return (h&&h[idx])||[];}
+function egwPaint(p,text,marks){
+ p.textContent='';
+ var cuts=[0,text.length];
+ marks.forEach(function(m){if(m.s>=0&&m.e<=text.length&&m.e>m.s){cuts.push(m.s,m.e);}});
+ cuts=cuts.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+ for(var k=0;k<cuts.length-1;k++){
+  var a=cuts[k],b=cuts[k+1],seg=text.slice(a,b);if(!seg)continue;
+  var hl=null,ul=null;
+  marks.forEach(function(m){if(m.s<=a&&m.e>=b){if(m.t==='ul')ul=m.col;else hl=m.col;}});
+  if(!hl&&!ul){p.appendChild(document.createTextNode(seg));continue;}
+  var sp=document.createElement('span');sp.textContent=seg;var st='';
+  if(hl)st+='background:'+(_EGW_HL[hl]||_EGW_HL.y)+';border-radius:2px;';
+  if(ul)st+='text-decoration:underline;text-decoration-color:'+(_EGW_UL[ul]||'#222')+';text-decoration-thickness:2px;text-underline-offset:3px;';
+  sp.style.cssText=st;p.appendChild(sp);
+ }
+}
+function mkEgwBody(text,idx,key){
+ var p=document.createElement('p');p.className='egw-body';
+ p.dataset.egwk=key;p.dataset.egwi=String(idx);p._egwText=text;
+ egwPaint(p,text,_egwMarks(key,idx));
+ return p;
+}
+function _egwApply(kind,col){ // kind: 'hl'|'ul'|'clear'
+ var sel=_egwSel;if(!sel)return false;
+ var p=sel.p,key=sel.k,idx=sel.i,text=p._egwText;
+ if(!settings.egwHl)settings.egwHl={};
+ if(!settings.egwHl[key])settings.egwHl[key]={};
+ var kept=[];
+ (settings.egwHl[key][idx]||[]).forEach(function(m){
+  var same=(kind==='clear')||m.t===kind;
+  if(!same||m.e<=sel.s||m.s>=sel.e){kept.push(m);return;}
+  if(m.s<sel.s)kept.push({t:m.t,col:m.col,s:m.s,e:sel.s});
+  if(m.e>sel.e)kept.push({t:m.t,col:m.col,s:sel.e,e:m.e});
+ });
+ if(kind!=='clear')kept.push({t:kind,col:col,s:sel.s,e:sel.e});
+ if(kept.length)settings.egwHl[key][idx]=kept;else delete settings.egwHl[key][idx];
+ if(!Object.keys(settings.egwHl[key]).length)delete settings.egwHl[key];
+ saveSettings();
+ egwPaint(p,text,kept);
+ _egwSel=null;
+ try{window.getSelection().removeAllRanges();}catch(e){}
+ _selRange=null;_selText='';
+ closeVAM();
+ return true;
+}
+function _egwFromSelection(el,sel){
+ var p=el.closest?el.closest('.egw-body[data-egwk]'):null;
+ if(!p||p._egwText==null)return null;
+ var r=sel.getRangeAt(0);
+ var pre=document.createRange();pre.selectNodeContents(p);
+ try{pre.setEnd(r.startContainer,r.startOffset);}catch(e){return null;}
+ var s=pre.toString().length;
+ var e=p.contains(r.endContainer)?(function(){var q=document.createRange();q.selectNodeContents(p);q.setEnd(r.endContainer,r.endOffset);return q.toString().length;})():p._egwText.length;
+ if(e<=s)return null;
+ return {p:p,k:p.dataset.egwk,i:parseInt(p.dataset.egwi,10)||0,s:s,e:e};
+}
 function showVAM(bi,ci,vi,txt,anchor,e){
  vamTarget={bi:bi,ci:ci,vi:vi,txt:txt};
  // Update translatable labels
@@ -6224,6 +6272,7 @@ function showVAM(bi,ci,vi,txt,anchor,e){
  // ovr not used for vamp — tap-outside handler closes it
 }
 function closeVAM(){
+ _egwSel=null;
  try{document.querySelectorAll('.vtxt.drag-sel-active').forEach(function(el){el.classList.remove('drag-sel-active');});}catch(e){}
  try{_clearRangeOverlay();}catch(e){}
  try{_clearSelHandles();}catch(e){}
@@ -6862,6 +6911,7 @@ function _hlCommit(kind,col){
  return true;
 }
 function vamHL(col){
+ if(_egwSel&&_egwApply('hl',col))return;
  if(!vamTarget)return;
  var key=vamTarget.bi+'-'+vamTarget.ci+'-'+vamTarget.vi;
  var _hlBefore=_hlSnapshot(key);
@@ -6876,6 +6926,7 @@ function vamHL(col){
  closeVAM();
 }
 function vamUL(col){
+ if(_egwSel&&_egwApply('ul',col))return;
  if(!vamTarget)return;
  var key=vamTarget.bi+'-'+vamTarget.ci+'-'+vamTarget.vi;
  var _hlBefore=_hlSnapshot(key);
@@ -6891,6 +6942,7 @@ function vamUL(col){
  closeVAM();
 }
 function vamClearMark(){
+ if(_egwSel&&_egwApply('clear'))return;
  if(!vamTarget)return;
  var key=vamTarget.bi+'-'+vamTarget.ci+'-'+vamTarget.vi;
  var _hlBefore=_hlSnapshot(key);
@@ -7060,6 +7112,7 @@ function updateHlUI(){
  if(typeof _hlUpdateUndoBtns==='function')_hlUpdateUndoBtns();
 }
 function applyHlAuto(bi,ci,vi,txt){
+ _egwSel=null;
  vamTarget={bi:bi,ci:ci,vi:vi,txt:txt};
  if(HL_TYPE==='ul')vamUL(HL_COLOR);else vamHL(HL_COLOR);
 }
@@ -11072,6 +11125,17 @@ function initTextSelection(){
  var anchor=document.createElement('div');
  anchor.style.cssText='position:fixed;left:'+Math.max(8,rect.left)+'px;top:'+Math.max(8,(rect.bottom||0)+4)+'px;width:1px;height:1px;z-index:1';
  document.body.appendChild(anchor);
+ _egwSel=null;
+ try{
+ var _es=_egwFromSelection(el,sel);
+ if(_es){
+ _egwSel=_es;
+ var _kp=_es.k.split('-').map(Number);
+ showVAM(_kp[0],_kp[1],_kp[2],selectedText,anchor,null);
+ setTimeout(function(){try{if(anchor.parentNode)anchor.parentNode.removeChild(anchor);}catch(e){}},200);
+ return;
+ }
+ }catch(egwErr){console.warn('egw sel',egwErr);}
  // Check if selection is in a verse row OR inline accordion
  var row=el;
  try{
