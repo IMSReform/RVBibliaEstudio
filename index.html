@@ -1331,7 +1331,7 @@ body.chrome-hidden {
  </div>
  <div style="display:flex;gap:8px;flex-wrap:wrap">
  <button id="gdSignInBtn" class="note-save" style="font-size:12px;padding:7px 14px" onclick="gdSignIn()">Sign in with Google</button>
- <button id="gdSignOutBtn" class="note-cancel" style="font-size:12px;padding:7px 14px;display:none" onclick="if(confirm('Sign out?'))gdSignOut()">Sign out</button>
+ <button id="gdSignOutBtn" class="note-cancel" style="font-size:12px;padding:7px 14px;display:none" onclick="if(confirm(_X('Sign out?','¿Cerrar sesión?')))gdSignOut()">Sign out</button>
  <button id="gdSyncBtn" class="note-save" style="font-size:12px;padding:7px 14px;background:var(--teal2)" onclick="gdSync(true)">Sync now</button>
  </div>
  </div>
@@ -1617,7 +1617,7 @@ body.chrome-hidden {
  <button id="harvestStartBtn" onclick="harvestStart()" style="flex:1;padding:10px;background:var(--teal2,#22a39a);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Start</button>
  <button id="harvestPauseBtn" onclick="harvestPause()" style="flex:1;padding:10px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:none">Pause</button>
  <button id="harvestDownloadBtn" onclick="harvestDownload()" style="flex:1;padding:10px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" disabled>Download JSON</button>
- <button id="harvestResetBtn" onclick="if(confirm('Clear all harvested data and progress, and start over?'))harvestReset()" style="flex:1;padding:10px;background:rgba(255,80,80,.18);color:#ff9d9d;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Reset</button>
+ <button id="harvestResetBtn" onclick="if(confirm(_X('Clear all harvested data and progress, and start over?','¿Borrar todos los datos descargados y el progreso, y empezar de nuevo?')))harvestReset()" style="flex:1;padding:10px;background:rgba(255,80,80,.18);color:#ff9d9d;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Reset</button>
  </div>
  </div>
 </div>
@@ -3665,6 +3665,7 @@ function locBookAbbr(x){
 
 
 // \u2500\u2500 UI STRINGS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function _X(en,es){return (typeof LANG!=='undefined'&&LANG==='es')?es:en;}
 const UI={
  en:{
  read:'Read',hist:'History',plans:'Plans',more:'More',
@@ -4202,10 +4203,10 @@ function saveIqKey(){
 function updateIqKeyStatus(){
  var statusEl=ge('iqKeyStatus');if(!statusEl)return;
  if(hasOwnIqKey()){
- statusEl.textContent='✅ Using your own key — Original Texts unlocked for every chapter';
+ statusEl.textContent=_X('✅ Using your own key — Original Texts unlocked for every chapter','✅ Usando tu propia clave — Textos originales desbloqueados en todos los capítulos');
  statusEl.style.color='var(--teal2)';
  } else {
- statusEl.textContent='✅ Original Texts already unlocked (using a shared key). Add your own above only if you want a dedicated quota.';
+ statusEl.textContent=_X('✅ Original Texts already unlocked (using a shared key). Add your own above only if you want a dedicated quota.','✅ Textos originales ya desbloqueados (con una clave compartida). Añade la tuya arriba solo si quieres una cuota propia.');
  statusEl.style.color='var(--teal2)';
  }
 }
@@ -4282,7 +4283,7 @@ async function iqFetchRetry(url,headers,maxRetries){
  var ra=parseFloat(r.headers.get('Retry-After'));
  var wait=ra?ra*1000:Math.min(1000*Math.pow(2,attempt),15000);
  var statusEl=ge('harvestStatusLbl');
- if(statusEl)statusEl.textContent='Rate limited — waiting '+Math.round(wait/1000)+'s…';
+ if(statusEl)statusEl.textContent=_X('Rate limited — waiting ','Límite alcanzado — esperando ')+Math.round(wait/1000)+'s…';
  await harvestSleep(wait);
  continue;
  }
@@ -4375,7 +4376,7 @@ function harvestUpdateProgress(done,total,detail){
 function harvestStopUI(){
  _harvestRunning=false;
  var startBtn=ge('harvestStartBtn'),pauseBtn=ge('harvestPauseBtn');
- if(startBtn){startBtn.style.display='';startBtn.textContent='Resume';}
+ if(startBtn){startBtn.style.display='';startBtn.textContent=textContent=_X('Resume','Reanudar');}
  if(pauseBtn)pauseBtn.style.display='none';
 }
 
@@ -4391,7 +4392,7 @@ async function harvestBuildManifest(){
  s.manifest=[];s.manifestDone=false;harvestSaveState(s);
  }
  var manifest=s.manifest||[];
- var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent='Counting verses per chapter…';
+ var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent=_X('Counting verses per chapter…','Contando versículos por capítulo…');
  var apiKey=getIqKey();
  var allChapters=[];
  for(var bi=0;bi<66;bi++)for(var ci=0;ci<BOOKS[bi].c;ci++)allChapters.push({bi:bi,ci:ci});
@@ -4418,7 +4419,7 @@ async function harvestBuildManifest(){
  failMsg='Unexpected response — '+(res.text||'(empty)').slice(0,200);
  }
  }
- if(statusEl)statusEl.textContent='Counting verses per chapter…';
+ if(statusEl)statusEl.textContent=_X('Counting verses per chapter…','Contando versículos por capítulo…');
  // A handful of RapidAPI plans/keys reject every call the same way (bad key,
  // not subscribed, quota already used elsewhere). Rate limiting (429) is
  // already retried with backoff inside iqFetchRetry, so a failMsg here means
@@ -4438,7 +4439,7 @@ async function harvestBuildManifest(){
  consecFail=0;
  manifest.push({bi:ch.bi,ci:ch.ci,vc:vc});
  }
- var detEl=ge('harvestDetail');if(detEl)detEl.textContent='Building chapter index… '+manifest.length+' / '+allChapters.length+' chapters';
+ var detEl=ge('harvestDetail');if(detEl)detEl.textContent=_X('Building chapter index… ','Creando índice de capítulos… ')+manifest.length+' / '+allChapters.length+_X(' chapters',' capítulos');
  s.manifest=manifest;harvestSaveState(s);
  await harvestSleep(_harvestDelay);
  }
@@ -4469,7 +4470,7 @@ async function harvestRun(){
  var s=harvestLoadState();
  var totalVerses=harvestTotalVerses(manifest);
  var doneCount=await harvestCountVerses();
- var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent='Running…';
+ var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent=_X('Running…','En curso…');
  harvestUpdateProgress(doneCount,totalVerses,'');
 
  var apiKey=getIqKey();
@@ -4508,7 +4509,7 @@ async function harvestRun(){
  failMsg='Unexpected response — '+(res.text||'(empty)').slice(0,200);
  }
  }
- if(statusEl)statusEl.textContent='Running…';
+ if(statusEl)statusEl.textContent=_X('Running…','En curso…');
  if(failMsg){
  // Don't cache the failure — leave this verse unmarked so a future
  // Resume (after the underlying problem is fixed) retries it instead
@@ -4533,7 +4534,7 @@ async function harvestRun(){
  s.flatIdx=flatIdx+1;harvestSaveState(s);
  }
  harvestUpdateProgress(totalVerses,totalVerses,'Complete');
- if(statusEl)statusEl.textContent='Complete';
+ if(statusEl)statusEl.textContent=_X('Complete','Completado');
  harvestSetMsg('✅ All done! Download your file below and send it back so it can be baked permanently into the app.',true);
  harvestStopUI();
  var dlBtn=ge('harvestDownloadBtn');if(dlBtn)dlBtn.disabled=false;
@@ -4550,8 +4551,8 @@ function harvestReset(){
  tx.objectStore('verses').clear();
  tx.oncomplete=function(){
  harvestUpdateProgress(0,0,'');
- var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent='Not started';
- var startBtn=ge('harvestStartBtn');if(startBtn){startBtn.style.display='';startBtn.textContent='Start';}
+ var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent=_X('Not started','No iniciado');
+ var startBtn=ge('harvestStartBtn');if(startBtn){startBtn.style.display='';startBtn.textContent=textContent=_X('Start','Iniciar');}
  var dlBtn=ge('harvestDownloadBtn');if(dlBtn)dlBtn.disabled=true;
  harvestSetMsg('Reset — all harvested data and progress cleared. Press Start to try again.',true);
  };
@@ -4564,13 +4565,13 @@ function harvestStart(){
  var startBtn=ge('harvestStartBtn'),pauseBtn=ge('harvestPauseBtn');
  if(startBtn)startBtn.style.display='none';
  if(pauseBtn)pauseBtn.style.display='';
- var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent='Starting…';
+ var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent=_X('Starting…','Iniciando…');
  harvestRun();
 }
 function harvestPause(){
  _harvestRunning=false;
  harvestStopUI();
- var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent='Paused';
+ var statusEl=ge('harvestStatusLbl');if(statusEl)statusEl.textContent=_X('Paused','En pausa');
 }
 async function harvestDownload(){
  var all=await harvestGetAllVerses();
@@ -4594,7 +4595,7 @@ async function harvestRefreshUI(){
  var statusEl=ge('harvestStatusLbl');
  if(statusEl)statusEl.textContent=doneCount>0?'Paused':'Not started';
  if(doneCount>0){
- var startBtn=ge('harvestStartBtn');if(startBtn)startBtn.textContent='Resume';
+ var startBtn=ge('harvestStartBtn');if(startBtn)startBtn.textContent=textContent=_X('Resume','Reanudar');
  }
  if(s.manifest&&s.manifestDone&&!manifestOk){
  harvestSetMsg('⚠ A previous run failed (the API returned no data for any chapter). Press Reset, then Start again once your API key/subscription is confirmed working.',true);
@@ -4657,7 +4658,7 @@ function updateFSLabel(){var el=ge('sdFsVal');if(el)el.textContent=(settings.fs|
 
 // \u2500\u2500 LANGUAGE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function setLang(l){
- LANG=l;
+ LANG=l;try{setTimeout(_xlRun,0);}catch(e){}
  settings.lang=l;saveSettings();
  ['en','nl','es'].forEach(function(x){
  ge('sdl-'+x)&&ge('sdl-'+x).classList.toggle('on',x===l);
@@ -4665,7 +4666,36 @@ function setLang(l){
  updateNavLabels();
  renderChapter();
 }
+
+// ── Spanish translation of static English labels (reverts when language is English) ──
+var _XL_T={"Go to chapter": "Ir al capítulo", "Follow main chapter": "Seguir el capítulo principal", "Lock scrolling together": "Bloquear desplazamiento conjunto", "✕ Close split screen": "✕ Cerrar pantalla dividida", "History": "Historial", "Reading Plans": "Planes de lectura", "More": "Más", "Bible Quiz": "Quiz bíblico", "Saved": "Guardados", "My Threads": "Mis hilos", "Thread": "Hilo", "Find a verse": "Buscar un versículo", "Daily Text": "Texto diario", "Go to verse": "Ir al versículo", "Bible Studies": "Estudios bíblicos", "Studies": "Estudios", "Rotate your phone to landscape to fill the TV screen": "Gira el teléfono en horizontal para llenar la pantalla del televisor", "Clear": "Borrar", "Draw": "Dibujar", "Original Text Harvester": "Recolector de textos originales", "Pulls the whole Bible's Hebrew/Greek + Strong's data via the IQ Bible API into this browser, so it can be baked into the app permanently (no more live calls). It respects the free tier's daily limit and picks up where it left off — safe to close this tab anytime and come back later, no need to run it every day.": "Descarga en este navegador todos los datos hebreos/griegos + Strong de la Biblia mediante la API de IQ Bible, para incorporarlos a la app de forma permanente (sin más llamadas en vivo). Respeta el límite diario del plan gratuito y continúa donde se quedó — puedes cerrar esta pestaña cuando quieras y volver más tarde, sin necesidad de ejecutarlo todos los días.", "Not started": "No iniciado", "0 / 0 verses": "0 / 0 versículos", "Start": "Iniciar", "Pause": "Pausar", "Download JSON": "Descargar JSON", "Reset": "Restablecer", "← Close": "← Cerrar", "Commentaries": "Comentarios", "Bookmarks & Highlights": "Marcadores y resaltados", "Highlight": "Resaltar", "Pen": "Lápiz", "Notes": "Notas", "Board": "Tablero", "Tap the + on any verse to pin it here, or add a sticky note. Drag cards to arrange them.": "Toca el + en cualquier versículo para fijarlo aquí, o añade una nota adhesiva. Arrastra las tarjetas para organizarlas.", "Notes are saved per chapter": "Las notas se guardan por capítulo", "Select a word to link": "Selecciona una palabra para vincular", "Cancel": "Cancelar", "Save": "Guardar", "Highlight red": "Resaltar rojo", "Underline yellow": "Subrayar amarillo", "Underline green": "Subrayar verde", "Underline blue": "Subrayar azul", "Underline red": "Subrayar rojo", "Underline black": "Subrayar negro", "Add note": "Añadir nota", "Bookmark": "Marcador", "Pin to Board": "Fijar en el tablero", "Link word": "Vincular palabra", "Save EGW quote": "Guardar cita de EGW", "Share": "Compartir", "Open in reader →": "Abrir en el lector →", "Choose Book": "Elegir libro", "← Back to results": "← Volver a los resultados", "— Ellen G. White, SDA Bible Commentary": "— Elena G. de White, Comentario bíblico adventista"};
+var _XL_A={"Write your study notes here…": "Escribe aquí tus notas de estudio…", "AI verse finder": "Buscador de versículos con IA", "Book outline": "Esquema del libro", "Read aloud": "Leer en voz alta", "Highlight": "Resaltar", "Underline": "Subrayar", "Close": "Cerrar", "Search the Bible...": "Buscar en la Biblia...", "Pen": "Lápiz", "Draw with Apple Pencil only (ignore fingers/palm)": "Dibujar solo con Apple Pencil (ignorar dedos/palma)", "Clear this slide": "Borrar esta diapositiva", "Previous chapter": "Capítulo anterior", "Next chapter": "Capítulo siguiente", "Add a sticky note": "Añadir una nota adhesiva", "Clear drawing": "Borrar dibujo", "Draw / handwrite": "Dibujar / escribir a mano", "Clear": "Borrar", "More": "Más", "Search all commentaries...": "Buscar en todos los comentarios...", "Eraser": "Borrador", "Undo": "Deshacer", "Redo": "Rehacer", "Smaller": "Más pequeño", "Larger": "Más grande", "Present": "Presentar", "Copy": "Copiar", "Laser pointer": "Puntero láser", "Highlighter": "Marcador", "Split screen": "Pantalla dividida", "Type": "Escribir", "Yellow": "Amarillo", "Green": "Verde", "Red": "Rojo", "Blue": "Azul", "Pink": "Rosa", "Custom color": "Color personalizado"};
+function _xlRun(){
+ try{
+ var es=(LANG==='es');
+ var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n;
+ while(n=w.nextNode()){
+  var p=n.parentElement;if(!p||p.tagName==='SCRIPT'||p.tagName==='STYLE')continue;
+  var cur=n.nodeValue;
+  if(n._xt===undefined||cur!==n._xt)n._xo=cur;
+  var o=n._xo,k=o.replace(/\s+/g,' ').trim(),out=o;
+  if(es&&_XL_T[k]){out=o.replace(k,_XL_T[k]);if(out===o&&o.trim()!==k)out=_XL_T[k];}
+  if(out!==cur)n.nodeValue=out;
+  n._xt=out;
+ }
+ ['title','placeholder','aria-label'].forEach(function(at){
+  document.querySelectorAll('['+at+']').forEach(function(e){
+   var cur=e.getAttribute(at),key='_xo_'+at;
+   if(e[key]===undefined||cur!==e[key+'t'])e[key]=cur;
+   var out=(es&&_XL_A[e[key]])?_XL_A[e[key]]:e[key];
+   if(out!==cur)e.setAttribute(at,out);
+   e[key+'t']=out;
+  });
+ });
+ }catch(er){console.warn('xl',er);}
+}
 function updateNavLabels(){
+ try{_xlRun();}catch(e){}
  var ids=['read','hist','plans','more'];
  var keys=['read','hist','plans','more'];
  ids.forEach(function(id,i){var el=ge('nl-'+id);if(el)el.textContent=T(keys[i]);});
@@ -5518,7 +5548,7 @@ function renderOrig(container,bi,ci){
  var anyData=wordsPerVerse.some(function(w){return w&&w.length;});
  if(!anyData){
  var p2=mk('p','ph');p2.style.padding='20px';
- p2.textContent='Could not load original text for this chapter — check your API key and connection.';
+ p2.textContent=_X('Could not load original text for this chapter — check your API key and connection.','No se pudo cargar el texto original de este capítulo — revisa tu clave de API y tu conexión.');
  container.appendChild(p2);
  return;
  }
@@ -5528,7 +5558,7 @@ function renderOrig(container,bi,ci){
  if(container._origReqId!==myReqId)return;
  container.innerHTML='';
  var p3=mk('p','ph');p3.style.padding='20px';
- p3.textContent='Could not load original text — check your connection.';
+ p3.textContent=_X('Could not load original text — check your connection.','No se pudo cargar el texto original — revisa tu conexión.');
  container.appendChild(p3);
  });
 }
@@ -5616,7 +5646,7 @@ function buildAC(el,vi,bi,ci,txt){
  var _egwPh=mk('p','ph');_egwPh.textContent=T('egw_ph');panes[1].appendChild(_egwPh);
  var _egwFetchBtn=mk('button','');
  _egwFetchBtn.style.cssText='margin-top:8px;font-size:12px;color:var(--teal2);background:none;border:1px solid var(--teal2);border-radius:20px;padding:4px 12px;cursor:pointer;font-weight:700';
- _egwFetchBtn.textContent='Search EGW Writings';
+ _egwFetchBtn.textContent=_X('Search EGW Writings','Buscar en los escritos de EGW');
  _egwFetchBtn.onclick=function(){
  var _bkName=locBookName(bi);var _ch=ci+1;var _vs=vi+1;
  var _query=_bkName+'+'+_ch+':'+_vs;
@@ -5629,23 +5659,23 @@ function buildAC(el,vi,bi,ci,txt){
  var savedQuotes=(settings.egwQuotes&&settings.egwQuotes[key])||[];
  var qDiv=mk('div','');qDiv.style.cssText='margin-top:12px;border-top:1px solid rgba(34,163,154,.2);padding-top:10px';
  var qLbl=mk('div','');qLbl.style.cssText='font-size:10px;font-weight:700;color:var(--teal2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px';
- qLbl.textContent='My saved quotes';qDiv.appendChild(qLbl);
+ qLbl.textContent=_X('My saved quotes','Mis citas guardadas');qDiv.appendChild(qLbl);
  var qList=mk('div','');qDiv.appendChild(qList);
 
  // Inline editor (shared add/edit)
  var egwEditIdx=-1;
  var egwInputWrap=mk('div','');egwInputWrap.style.cssText='display:none;margin-bottom:8px';
- var egwTa=mk('textarea','note-ta');egwTa.placeholder='Paste or type EGW quote...';egwTa.style.cssText='width:100%;min-height:70px;font-size:13px;resize:vertical';
+ var egwTa=mk('textarea','note-ta');egwTa.placeholder=_X('Paste or type EGW quote...','Pega o escribe una cita de EGW...');egwTa.style.cssText='width:100%;min-height:70px;font-size:13px;resize:vertical';
  var egwCharCount=mk('div','');egwCharCount.style.cssText='font-size:11px;color:var(--ink3);text-align:right;margin-top:2px';
  egwTa.oninput=function(){egwCharCount.textContent=egwTa.value.length+' chars';};
  var egwActRow=mk('div','');
- var egwSaveBtn=mk('button','note-save');egwSaveBtn.style.cssText='font-size:12px';egwSaveBtn.textContent='Save';
- var egwCancelBtn=mk('button','note-cancel');egwCancelBtn.style.cssText='font-size:12px;margin-left:6px';egwCancelBtn.textContent='Cancel';
+ var egwSaveBtn=mk('button','note-save');egwSaveBtn.style.cssText='font-size:12px';egwSaveBtn.textContent=_X('Save','Guardar');
+ var egwCancelBtn=mk('button','note-cancel');egwCancelBtn.style.cssText='font-size:12px;margin-left:6px';egwCancelBtn.textContent=_X('Cancel','Cancelar');
  egwActRow.appendChild(egwSaveBtn);egwActRow.appendChild(egwCancelBtn);
  egwInputWrap.appendChild(egwTa);egwInputWrap.appendChild(egwCharCount);egwInputWrap.appendChild(egwActRow);
  qDiv.appendChild(egwInputWrap);
 
- var addEgwBtn=mk('button','');addEgwBtn.style.cssText='font-size:12px;color:var(--teal2);background:transparent;border:1.5px solid var(--teal2);border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;font-weight:700';addEgwBtn.textContent='+ Add quote';
+ var addEgwBtn=mk('button','');addEgwBtn.style.cssText='font-size:12px;color:var(--teal2);background:transparent;border:1.5px solid var(--teal2);border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;font-weight:700';addEgwBtn.textContent=_X('+ Add quote','+ Añadir cita');
  qDiv.appendChild(addEgwBtn);
 
  function openEgwEd(existing,editIdx){
@@ -5675,10 +5705,10 @@ function buildAC(el,vi,bi,ci,txt){
  var qTxt=mk('div','');qTxt.textContent=q;qTxt.style.cssText='margin-bottom:6px;word-break:break-word';qEl.appendChild(qTxt);
  var qActs=mk('div','');qActs.style.cssText='display:flex;gap:8px;font-style:normal';
  var editQ=mk('button','');editQ.style.cssText='background:none;border:1px solid var(--teal2);color:var(--teal2);font-size:11px;font-weight:700;cursor:pointer;padding:3px 10px;border-radius:6px';
- editQ.textContent='Edit';
+ editQ.textContent=_X('Edit','Editar');
  (function(qi2,qtxt){editQ.onclick=function(e){e.stopPropagation();openEgwEd(qtxt,qi2);};})(qi,q);
  var delQ=mk('button','');delQ.style.cssText='background:none;border:1px solid var(--ink3);color:var(--ink3);font-size:11px;cursor:pointer;padding:3px 10px;border-radius:6px';
- delQ.textContent='Delete';
+ delQ.textContent=_X('Delete','Eliminar');
  (function(qi2){delQ.onclick=function(e){e.stopPropagation();settings.egwQuotes[key].splice(qi2,1);if(!settings.egwQuotes[key].length)delete settings.egwQuotes[key];saveSettings();buildAC(el,vi,bi,ci,txt);};})(qi);
  qActs.appendChild(editQ);qActs.appendChild(delQ);qEl.appendChild(qActs);qList.appendChild(qEl);
  });
@@ -5723,12 +5753,12 @@ function buildAC(el,vi,bi,ci,txt){
  var _paraHost=mk('div','');
  var _sBtn=mk('button','');
  _sBtn.style.cssText='font-size:12px;color:var(--teal2);background:none;border:none;cursor:pointer;padding:2px 0 6px;font-weight:700;display:none';
- _sBtn.textContent='Show more +';
+ _sBtn.textContent=_X('Show more +','Ver más +');
  _sBtn.onclick=function(e){
  e.stopPropagation();
  _sAll=!_sAll;
  _paraHost.querySelectorAll('p').forEach(function(pe){pe.style.display=_sAll||pe.dataset.spi==='0'?'block':'none';});
- _sBtn.textContent=_sAll?'Show less -':'Show more +';
+ _sBtn.textContent=_sAll?_X('Show less -','Ver menos -'):_X('Show more +','Ver más +');
  };
  function sdabcChunk(text){
  // Respect forced paragraph breaks (\n\n) inserted at sub-heading boundaries
@@ -5860,7 +5890,7 @@ function buildAC(el,vi,bi,ci,txt){
  var _savedLbl2=mk('div','');_savedLbl2.style.cssText='margin-top:6px;font-size:11px;color:var(--ink3);font-style:italic';
  _savedLbl2.textContent='✓ Saved — '+mLabel;aRsp.appendChild(_savedLbl2);
  var _regenBtn=mk('button','');_regenBtn.style.cssText='margin-top:4px;font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0';
- _regenBtn.textContent='Regenerate '+mLabel;
+ _regenBtn.textContent=_X('Regenerate ','Regenerar ')+mLabel;
  _regenBtn.onclick=function(){delete settings.aiNotes[_aiKeyFor(_aiMode)];saveSettings();_renderAIModeUI();};
  aRsp.appendChild(_regenBtn);
  aBtn.style.display='none';
@@ -5889,13 +5919,13 @@ function buildAC(el,vi,bi,ci,txt){
  // 4: My Notes — inline notepad, auto-saves as you type (scrolls internally once it gets long)
  var p4=document.createElement('div');p4.style.cssText='padding:4px 0';
  var noteLbl=mk('div','');noteLbl.style.cssText='font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center';
- var noteLblTxt=document.createElement('span');noteLblTxt.textContent='My Note';
- var noteSavedInd=document.createElement('span');noteSavedInd.style.cssText='color:var(--teal2);font-weight:700;font-size:10px;opacity:0;transition:opacity .3s;text-transform:none;letter-spacing:0';noteSavedInd.textContent='Saved ✓';
+ var noteLblTxt=document.createElement('span');noteLblTxt.textContent=_X('My Note','Mi nota');
+ var noteSavedInd=document.createElement('span');noteSavedInd.style.cssText='color:var(--teal2);font-weight:700;font-size:10px;opacity:0;transition:opacity .3s;text-transform:none;letter-spacing:0';noteSavedInd.textContent=_X('Saved ✓','Guardado ✓');
  noteLbl.appendChild(noteLblTxt);noteLbl.appendChild(noteSavedInd);
  p4.appendChild(noteLbl);
  var noteTa2=document.createElement('textarea');
  noteTa2.value=(settings.notes&&settings.notes[key])||'';
- noteTa2.placeholder='Write a note for this verse…';
+ noteTa2.placeholder=_X('Write a note for this verse…','Escribe una nota para este versículo…');
  noteTa2.style.cssText='width:100%;min-height:70px;max-height:220px;overflow-y:auto;resize:vertical;box-sizing:border-box;font-size:13px;line-height:1.7;color:var(--ink2);font-family:Roboto,system-ui,sans-serif;padding:8px 10px;background:var(--paper2);border:1px solid var(--paper3);border-radius:8px'
  ;
  (function(key,bi,ci,vi,noteTa2,noteSavedInd){
@@ -6010,7 +6040,7 @@ async function loadAI(key,btn,ldr,resp,ref,txt){
  if(!_savedAI){
  var _saveAIBtn=mk('button','');
  _saveAIBtn.style.cssText='margin-top:8px;font-size:12px;color:var(--teal2);background:none;border:1px solid var(--teal2);border-radius:20px;padding:4px 12px;cursor:pointer;font-weight:700;display:block';
- _saveAIBtn.textContent='+ Save this commentary';
+ _saveAIBtn.textContent=_X('+ Save this commentary','+ Guardar este comentario');
  _saveAIBtn.onclick=function(){
  if(!settings.aiNotes)settings.aiNotes={};
  settings.aiNotes[key]=t;
@@ -6299,13 +6329,13 @@ function toggleVampMore(e){
 }
 function vamAddXR(){
  if(!vamTarget)return;
- var ref=prompt('Add cross-reference (e.g. Joh.3:16 or Rom.8:28):');
+ var ref=prompt(_X('Add cross-reference (e.g. Joh.3:16 or Rom.8:28):','Añadir referencia cruzada (p. ej. Jn 3:16 o Rom 8:28):'));
  if(!ref||!ref.trim())return;
  ref=ref.trim();
  // Validate reference
  var p=parseRef(ref.replace(/\s+/,'.')
  .replace(/([A-Za-z])(\d)/,'$1.$2'));
- if(!p){alert('Reference not recognized. Try format: Joh.3:16');return;}
+ if(!p){alert(_X('Reference not recognized. Try format: Joh.3:16','Referencia no reconocida. Prueba con el formato: Jn 3:16'));return;}
  // Store in localStorage under key 'xrU:bi-ci-vi'
  var key='xrU:'+vamTarget.bi+'-'+vamTarget.ci+'-'+vamTarget.vi;
  var existing=[];
@@ -6345,7 +6375,7 @@ function vamGenXR(){
  raw=raw||'';
  var refs=[];
  try{refs=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){}
- if(!refs.length){var err=document.createElement('div');err.style.cssText='font-size:12px;color:var(--ink3);padding:4px 0';err.textContent='Could not generate references.';if(xrPane)xrPane.insertBefore(err,xrPane.firstChild);return;}
+ if(!refs.length){var err=document.createElement('div');err.style.cssText='font-size:12px;color:var(--ink3);padding:4px 0';err.textContent=_X('Could not generate references.','No se pudieron generar referencias.');if(xrPane)xrPane.insertBefore(err,xrPane.firstChild);return;}
  var key='xrU:'+bi+'-'+ci+'-'+vi;
  var existing=[];try{existing=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
  refs.forEach(function(r){if(!existing.includes(r))existing.push(r);});
@@ -6468,7 +6498,7 @@ function showThreadPicker(secondWord){
  box.appendChild(title);
  var sub=document.createElement('div');
  sub.style.cssText='font-size:12px;color:var(--ink3);margin-bottom:14px';
- sub.textContent='Choose a thread, or start a new one';
+ sub.textContent=_X('Choose a thread, or start a new one','Elige un hilo o crea uno nuevo');
  box.appendChild(sub);
  // Quick "new unnamed thread" button
  var newBtn=document.createElement('button');
@@ -6481,10 +6511,10 @@ function showThreadPicker(secondWord){
  var nameRow=document.createElement('div');
  nameRow.style.cssText='display:flex;gap:6px;margin-bottom:14px';
  var nameInput=document.createElement('input');
- nameInput.placeholder='Or name a new thread\u2026';
+ nameInput.placeholder=_X('Or name a new thread\u2026','O nombra un hilo nuevo\u2026');
  nameInput.style.cssText='flex:1;padding:8px 10px;border:1px solid var(--paper3);border-radius:8px;font-size:13px;font-family:inherit';
  var nameBtn=document.createElement('button');
- nameBtn.textContent='Create';
+ nameBtn.textContent=_X('Create','Crear');
  nameBtn.style.cssText='padding:8px 14px;border:none;border-radius:8px;background:var(--teal2);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
  nameBtn.onclick=function(){
  var nm=nameInput.value.trim();
@@ -6499,7 +6529,7 @@ function showThreadPicker(secondWord){
  if(ids.length){
  var divider=document.createElement('div');
  divider.style.cssText='font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 8px';
- divider.textContent='Existing threads';
+ divider.textContent=_X('Existing threads','Hilos existentes');
  box.appendChild(divider);
  ids.forEach(function(tid){
  var th=threads[tid];
@@ -6561,7 +6591,7 @@ function openThreadPreview(tid,fromBi,fromCi,fromVi,fromWord){
  title.innerHTML='<span style="width:14px;height:14px;border-radius:50%;background:'+th.color+';flex-shrink:0;display:inline-block"></span><span>'+(th.name||'Thread')+'</span>';
  box.appendChild(title);
  if(!others.length){
- var ph=document.createElement('div');ph.style.cssText='font-size:13px;color:var(--ink3)';ph.textContent='No other linked words yet.';
+ var ph=document.createElement('div');ph.style.cssText='font-size:13px;color:var(--ink3)';ph.textContent=_X('No other linked words yet.','Aún no hay otras palabras vinculadas.');
  box.appendChild(ph);
  }
  others.forEach(function(w){
@@ -6590,7 +6620,7 @@ function openThreadPreview(tid,fromBi,fromCi,fromVi,fromWord){
  card.appendChild(txtEl);
  var goBtn=document.createElement('div');
  goBtn.style.cssText='font-size:11px;color:var(--teal2);font-weight:700;margin-top:6px';
- goBtn.textContent='Go to verse \u2192';
+ goBtn.textContent=_X('Go to verse \u2192','Ir al versículo \u2192');
  card.appendChild(goBtn);
  card.onclick=function(){
  overlay.remove();
@@ -6647,13 +6677,13 @@ function vamSaveEGW(){
  box.style.cssText='background:#fff;border-radius:16px;padding:20px;width:100%;max-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.2)';
  var title=mk('div','');
  title.style.cssText='font-size:14px;font-weight:700;color:var(--ink);font-family:Gilroy,sans-serif;margin-bottom:6px';
- title.textContent='Save EGW Quote';
+ title.textContent=_X('Save EGW Quote','Guardar cita de EGW');
  var sub=mk('div','');
  sub.style.cssText='font-size:12px;color:var(--ink3);margin-bottom:14px;line-height:1.5';
  sub.textContent='"'+selTxt.slice(0,60)+(selTxt.length>60?'…':'')+'"';
  var lbl=mk('div','');
  lbl.style.cssText='font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px';
- lbl.textContent='Save to language:';
+ lbl.textContent=_X('Save to language:','Guardar en el idioma:');
  var btnWrap=mk('div','');btnWrap.style.cssText='display:flex;flex-direction:column;gap:8px';
  var langs=[
  {code:'nl',label:'Nederlands (EGW NL)',store:'egwQuotes'},
@@ -6682,7 +6712,7 @@ function vamSaveEGW(){
  });
  var cancelBtn=mk('button','');
  cancelBtn.style.cssText='margin-top:4px;padding:8px;background:none;border:none;color:var(--ink3);cursor:pointer;font-size:13px;width:100%';
- cancelBtn.textContent='Cancel';
+ cancelBtn.textContent=_X('Cancel','Cancelar');
  cancelBtn.onclick=function(){overlay.remove();};
  box.appendChild(title);box.appendChild(sub);box.appendChild(lbl);box.appendChild(btnWrap);box.appendChild(cancelBtn);
  overlay.appendChild(box);document.body.appendChild(overlay);
@@ -7982,7 +8012,7 @@ function updateSrBackPill(){
  if(!pill)return;
  if(_srResults.length>0){
  pill.classList.add('on');
- pill.textContent='\u2190 Back to results ('+(_srSeenIdx+1)+'/'+_srResults.length+')';
+ pill.textContent=_X('\u2190 Back to results','\u2190 Volver a los resultados')+' ('+(_srSeenIdx+1)+'/'+_srResults.length+')';
  } else {
  pill.classList.remove('on');
  }
@@ -9546,7 +9576,7 @@ function closeAllSheets(){
 function renderHist(){
  var body=ge('histBody');body.innerHTML='';
  if(!histList.length){body.innerHTML='<div class="empty">'+T('no_hist')+'</div>';return;}
- var clrBtn=mk('button','');clrBtn.style.cssText='display:block;margin:8px 16px 4px auto;padding:4px 12px;background:none;border:1px solid var(--paper3);border-radius:8px;font-size:11px;color:var(--ink3);cursor:pointer;font-family:inherit';clrBtn.textContent='Clear all';clrBtn.onclick=function(){histList=[];saveData();renderHist();};body.appendChild(clrBtn);
+ var clrBtn=mk('button','');clrBtn.style.cssText='display:block;margin:8px 16px 4px auto;padding:4px 12px;background:none;border:1px solid var(--paper3);border-radius:8px;font-size:11px;color:var(--ink3);cursor:pointer;font-family:inherit';clrBtn.textContent=_X('Clear all','Borrar todo');clrBtn.onclick=function(){histList=[];saveData();renderHist();};body.appendChild(clrBtn);
  histList.slice().reverse().forEach(function(h){
  var item=mk('div','hist-item');
  var ref=mk('div','hi-ref');ref.textContent=h.ref;
@@ -9640,10 +9670,10 @@ function renderPlans(){
  var resetBtn=mk('button','');
  resetBtn.style.cssText='background:var(--paper2);color:var(--ink2);border:1px solid var(--paper3);border-radius:8px;padding:9px 12px;font-size:12px;cursor:pointer;font-family:inherit';
  resetBtn.textContent='↺';
- resetBtn.title='Reset plan';
+ resetBtn.title=_X('Reset plan','Reiniciar plan');
  resetBtn.onclick=function(e){
  e.stopPropagation();
- if(confirm('Reset "'+title.textContent+'" plan?')){
+ if(confirm(_X('Reset "'+title.textContent+'" plan?','¿Reiniciar el plan "'+title.textContent+'"?'))){
  planProg[plan.id]=0;savePlanProg();renderPlans();
  }
  };
@@ -9985,7 +10015,7 @@ function renderThreads(){
  cnt.textContent=uniqueWords+' linked word'+(uniqueWords===1?'':'s');
  info.appendChild(nm);info.appendChild(cnt);
  var del=mk('button','si-del');del.textContent='\u00D7';
- del.onclick=function(e){e.stopPropagation();if(confirm('Delete this thread?')){var t2=getThreads();delete t2[tid];saveThreads(t2);renderThreads();if(typeof renderChapter==='function')renderChapter();}};
+ del.onclick=function(e){e.stopPropagation();if(confirm(_X('Delete this thread?','¿Eliminar este hilo?'))){var t2=getThreads();delete t2[tid];saveThreads(t2);renderThreads();if(typeof renderChapter==='function')renderChapter();}};
  item.appendChild(dot);item.appendChild(info);item.appendChild(del);
  item.onclick=function(){openSheet('threadmap');renderThreadMap(tid);};
  body.appendChild(item);
@@ -10001,7 +10031,7 @@ function renderThreadMap(tid){
  var ctrlRow=mk('div','');ctrlRow.style.cssText='display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--paper2)';
  var nameInput=document.createElement('input');
  nameInput.value=th.name||'';
- nameInput.placeholder='Thread name\u2026';
+ nameInput.placeholder=_X('Thread name\u2026','Nombre del hilo\u2026');
  nameInput.style.cssText='flex:1;padding:7px 10px;border:1px solid var(--paper3);border-radius:8px;font-size:13px;font-family:inherit';
  nameInput.onchange=function(){var t2=getThreads();t2[tid].name=nameInput.value.trim();saveThreads(t2);ge('threadMapTitle').textContent=t2[tid].name||'Thread';renderThreads();};
  ctrlRow.appendChild(nameInput);
@@ -10016,7 +10046,7 @@ function renderThreadMap(tid){
  var mapWrap=mk('div','');mapWrap.style.cssText='position:relative;padding:20px 16px 20px 28px';
  var words=th.words;
  if(!words.length){
- var ph=mk('div','empty');ph.textContent='No words in this thread yet.';body.appendChild(ph);return;
+ var ph=mk('div','empty');ph.textContent=_X('No words in this thread yet.','Aún no hay palabras en este hilo.');body.appendChild(ph);return;
  }
  // Connecting line (SVG) spanning the full list
  var svgLine=document.createElementNS('http://www.w3.org/2000/svg','svg');
@@ -10039,7 +10069,7 @@ function renderThreadMap(tid){
  snippet.textContent=fullTxt.length>90?fullTxt.slice(0,90)+'\u2026':fullTxt;
  nodeInfo.appendChild(snippet);
  }
- var rmBtn=mk('button','');rmBtn.textContent='Remove from thread';
+ var rmBtn=mk('button','');rmBtn.textContent=_X('Remove from thread','Quitar del hilo');
  rmBtn.style.cssText='margin-top:6px;font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0';
  rmBtn.onclick=function(e){
  e.stopPropagation();
@@ -10064,7 +10094,7 @@ function renderThreadMap(tid){
  var delAll=mk('button','');delAll.textContent={en:'Delete entire thread',nl:'Verwijder hele draad',es:'Eliminar todo el hilo'}[LANG]||'Delete entire thread';
  delAll.style.cssText='display:block;margin:8px 16px 20px;font-size:13px;color:#c0392b;background:none;border:1px solid #c0392b;border-radius:20px;padding:8px 16px;cursor:pointer;font-family:inherit';
  delAll.onclick=function(){
- if(confirm('Delete this entire thread?')){
+ if(confirm(_X('Delete this entire thread?','¿Eliminar todo este hilo?'))){
  var t2=getThreads();delete t2[tid];saveThreads(t2);
  closeSheet('threadmap');openSheet('threads');
  if(typeof renderChapter==='function')renderChapter();
@@ -10111,7 +10141,7 @@ function renderSaved(){
  body.appendChild(item);
  });
  // Saved EGW Quotes
- var egwSec=mk('div','saved-sec');egwSec.style.borderTop='1px solid var(--paper3)';egwSec.textContent='EGW Quotes';body.appendChild(egwSec);
+ var egwSec=mk('div','saved-sec');egwSec.style.borderTop='1px solid var(--paper3)';egwSec.textContent=_X('EGW Quotes','Citas de EGW');body.appendChild(egwSec);
  var allEgw=[];
  var _egwStores=[
  {store:'egwQuotes',lang:'NL'},
@@ -10126,7 +10156,7 @@ function renderSaved(){
  quotes.forEach(function(q,qi){allEgw.push({key:key,ref:ref,q:q,qi:qi,parts:parts,store:s.store,lang:s.lang});});
  });
  });
- if(!allEgw.length){var eEgw=mk('div','empty');eEgw.textContent='No saved EGW quotes yet.';body.appendChild(eEgw);}
+ if(!allEgw.length){var eEgw=mk('div','empty');eEgw.textContent=_X('No saved EGW quotes yet.','Aún no hay citas de EGW guardadas.');body.appendChild(eEgw);}
  else allEgw.forEach(function(item){
  var el2=mk('div','saved-item');
  var info=mk('div','');info.style.flex='1';
@@ -10142,7 +10172,7 @@ function renderSaved(){
  // Highlights
  var hlSec=mk('div','saved-sec');hlSec.style.borderTop='1px solid var(--paper3)';hlSec.textContent=T('highlights');body.appendChild(hlSec);
  var hls=Object.entries(settings.highlights||{});
- if(!hls.length){var e3=mk('div','empty');e3.textContent='No highlights yet.';body.appendChild(e3);}
+ if(!hls.length){var e3=mk('div','empty');e3.textContent=_X('No highlights yet.','Aún no hay resaltados.');body.appendChild(e3);}
  else hls.forEach(function(entry){
  var key=entry[0];var val=entry[1];
  var parts=key.split('-').map(Number);if(!BOOKS[parts[0]])return;
@@ -10389,7 +10419,7 @@ async function startQuiz(bookName,bi){
  renderQ();
  }catch(err){
  body.innerHTML='';
- var h=mk('div','');h.style.cssText='font-weight:700;color:var(--red);padding:14px 16px 4px;font-size:15px';h.textContent='Quiz could not load';body.appendChild(h);
+ var h=mk('div','');h.style.cssText='font-weight:700;color:var(--red);padding:14px 16px 4px;font-size:15px';h.textContent=_X('Quiz could not load','No se pudo cargar el quiz');body.appendChild(h);
  var detail=mk('pre','');detail.style.cssText='font-size:11px;color:var(--ink3);padding:8px 16px;margin:4px 8px;background:var(--paper2);border-radius:8px;word-break:break-all;white-space:pre-wrap;max-height:160px;overflow-y:auto;line-height:1.5';
  detail.textContent=err.message;body.appendChild(detail);
  var rb=mk('button','bs-send');rb.style.margin='12px 16px';rb.textContent=T('quiz_retry');rb.onclick=renderQuizHome;body.appendChild(rb);
@@ -10731,7 +10761,7 @@ function renderBSLesson(){
  var obtn=mk('button','bvc-open');obtn.textContent='\u2192';
  obtn.onclick=function(e){e.stopPropagation();var p=parseRef(vref.replace(/[,;].*/,'').trim());if(p){CUR.bi=p.bi;CUR.ci=p.ci;closeSheet('bslesson');closeSheet('bs');renderChapter();}};
  vh.appendChild(arr);vh.appendChild(rl);vh.appendChild(obtn);
- var vc=mk('div','bvc-text');vc.textContent='Tap to expand...';
+ var vc=mk('div','bvc-text');vc.textContent=_X('Tap to expand...','Toca para expandir...');
  var isOpen=false;
  vh.onclick=function(){
  isOpen=!isOpen;vc.classList.toggle('open',isOpen);arr.classList.toggle('open',isOpen);
@@ -10739,7 +10769,7 @@ function renderBSLesson(){
  var pp=parseRef(vref.replace(/[,;].*/,'').trim());
  if(pp){var local=getV(pp.bi,pp.ci);
  if(local&&local[pp.vi]){vc.textContent='\u201C'+local[pp.vi]+'\u201D';}
- else{vc.textContent='Loading\u2026';fetchV(pp.bi,pp.ci).then(function(vs){if(vs&&vs[pp.vi])vc.textContent='\u201C'+vs[pp.vi]+'\u201D';else vc.textContent='Open in Bible reader to see this verse.';});}
+ else{vc.textContent=_X('Loading\u2026','Cargando\u2026');fetchV(pp.bi,pp.ci).then(function(vs){if(vs&&vs[pp.vi])vc.textContent='\u201C'+vs[pp.vi]+'\u201D';else vc.textContent=_X('Open in Bible reader to see this verse.','Abre el lector bíblico para ver este versículo.');});}
  }
  }
  };
@@ -10897,7 +10927,7 @@ function renderMM(){
  // Double-tap to edit
  var lastTap=0;
  div.addEventListener('touchend',function(){
- var now=Date.now();if(now-lastTap<300){var t=prompt('Edit:',node.txt);if(t){node.txt=t;renderMM();}}lastTap=now;
+ var now=Date.now();if(now-lastTap<300){var t=prompt(_X('Edit:','Editar:'),node.txt);if(t){node.txt=t;renderMM();}}lastTap=now;
  },{passive:true});
  layer.appendChild(div);
  });
@@ -11131,7 +11161,9 @@ function initTextSelection(){
  if(_es){
  _egwSel=_es;
  var _kp=_es.k.split('-').map(Number);
- showVAM(_kp[0],_kp[1],_kp[2],selectedText,anchor,null);
+ vamTarget={bi:_kp[0],ci:_kp[1],vi:_kp[2],txt:selectedText};
+ if(HL_MODE){_egwApply(HL_TYPE==='ul'?'ul':'hl',HL_COLOR);}
+ else showVAM(_kp[0],_kp[1],_kp[2],selectedText,anchor,null);
  setTimeout(function(){try{if(anchor.parentNode)anchor.parentNode.removeChild(anchor);}catch(e){}},200);
  return;
  }
@@ -11535,7 +11567,7 @@ function renderSplit(){
  });
  }
  var ref=ge('splitRef');if(ref)ref.textContent=locBookName(bi)+' '+(ci+1);
- if(!ge('splitSyncBtn')){var sHdr=document.querySelector('.split-pane-hdr');if(sHdr){var sb=document.createElement('button');sb.id='splitSyncBtn';sb.onclick=toggleSplitSync;sb.title='Scroll sync on';sb.style.cssText='background:none;border:none;cursor:pointer;padding:0 4px;opacity:1;color:var(--teal2)';sb.innerHTML='<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/></svg>';sHdr.appendChild(sb);}}
+ if(!ge('splitSyncBtn')){var sHdr=document.querySelector('.split-pane-hdr');if(sHdr){var sb=document.createElement('button');sb.id='splitSyncBtn';sb.onclick=toggleSplitSync;sb.title=_X('Scroll sync on','Sincronizar desplazamiento: sí');sb.style.cssText='background:none;border:none;cursor:pointer;padding:0 4px;opacity:1;color:var(--teal2)';sb.innerHTML='<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/></svg>';sHdr.appendChild(sb);}}
  wireSplitSync();
  var vDiv=ge('splitVerses');if(!vDiv)return;
  vDiv.innerHTML='';
@@ -11557,7 +11589,7 @@ function renderSplit(){
  try{var kc=localStorage.getItem(kjvCacheKey);if(kc)kjvCached=JSON.parse(kc);}catch(e){}
  if(kjvCached){renderSplitVerses(vDiv,kjvCached);return;}
  var pk=mk('p','');pk.style.cssText='padding:16px;color:var(--ink3);font-style:italic;font-size:14px';
- pk.textContent='Loading...';vDiv.appendChild(pk);
+ pk.textContent=_X('Loading...','Cargando...');vDiv.appendChild(pk);
  var bnK=encodeURIComponent(BOOKS[bi].n);
  fetch('https://bible-api.com/'+bnK+'+'+(ci+1)+'?translation=kjv')
  .then(function(r){return r.json();})
@@ -12010,7 +12042,7 @@ function updateCmntSrBackPill(){
  if(_cmntSrResults.length>0){
  pill.classList.add('on');
  var seenN=_cmntSrResults.findIndex(function(r){return r.key===_cmntSrSeenKey;});
- pill.textContent='\u2190 Back to results ('+(seenN+1)+'/'+_cmntSrResults.length+')';
+ pill.textContent=_X('\u2190 Back to results','\u2190 Volver a los resultados')+' ('+(seenN+1)+'/'+_cmntSrResults.length+')';
  } else {
  pill.classList.remove('on');
  }
@@ -12026,7 +12058,7 @@ function reopenCmntSearchResults(){
  var pill=ge('cmntSrBackPill');if(pill)pill.classList.remove('on');
 }
 
-function setCmntSource(src){cmntSource=src;var si=ge('cmntSearchInp');if(si)si.value='';['egw','sda','sanctuary','ai','notes'].forEach(function(s){var btn=ge('csrc-'+s);if(!btn)return;btn.style.borderBottomColor=s===src?'var(--c2,var(--teal2))':'transparent';btn.style.color=s===src?'var(--teal2)':'var(--ink3)';btn.style.fontWeight=s===src?'700':'500';});renderCommentary();}
+function setCmntSource(src){cmntSource=src;var si=ge('cmntSearchInp');if(si)si.placeholder=_X('Search all commentaries...','Buscar en todos los comentarios...');if(si)si.value='';['egw','sda','sanctuary','ai','notes'].forEach(function(s){var btn=ge('csrc-'+s);if(!btn)return;btn.style.borderBottomColor=s===src?'var(--c2,var(--teal2))':'transparent';btn.style.color=s===src?'var(--teal2)':'var(--ink3)';btn.style.fontWeight=s===src?'700':'500';});renderCommentary();}
 function openCmntPicker(){
  // Set picker mode to commentary navigation
  _pickerCtx='cmnt';
@@ -12136,7 +12168,7 @@ function renderCommentary(){
  egwSec.dataset.egwSec='1';
  var egwTitle=mk('div','');
  egwTitle.style.cssText='font-size:10px;font-weight:700;color:var(--teal2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:Gilroy,sans-serif';
- egwTitle.textContent='Ellen G. White References';
+ egwTitle.textContent=_X('Ellen G. White References','Referencias de Elena G. de White');
  // Format the references: "1 PP 44; ML 107" → numbered list style
  var refsText=_egwRefs.replace('ELLEN G. WHITE COMMENTS','').trim();
  // Split by verse numbers (digits followed by text). Rewritten without
@@ -12155,7 +12187,7 @@ function renderCommentary(){
  }
  if(_paras.length>1){
  var _showBtn=mk('button','');_showBtn.style.cssText='font-size:12px;color:var(--teal2);background:none;border:none;cursor:pointer;padding:0 0 10px;font-weight:700';
- _showBtn.textContent='Show more +';
+ _showBtn.textContent=_X('Show more +','Ver más +');
  var _showAll=false;
  _showBtn.onclick=function(e){
  e.stopPropagation();
@@ -12163,7 +12195,7 @@ function renderCommentary(){
  body.querySelectorAll('p').forEach(function(pe){pe.style.display=_showAll||pe.dataset.pi==='0'?'block':'none';});
  var _egwDiv=body.querySelector('[data-egw-sec]');
  if(_egwDiv)_egwDiv.style.display=_showAll?'block':'none';
- _showBtn.textContent=_showAll?'Show less -':'Show more +';
+ _showBtn.textContent=_showAll?_X('Show less -','Ver menos -'):_X('Show more +','Ver más +');
  };
  body.appendChild(_showBtn);
  } else {body.style.paddingBottom='12px';}
@@ -12221,7 +12253,7 @@ function renderCommentary(){
  var vrefRow=mk('div','');vrefRow.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px';
  var vref=mk('div','');vref.style.cssText='font-size:12px;font-weight:700;color:var(--teal2);font-family:Gilroy,sans-serif';
  vref.textContent=locBookName(cmntBi)+' '+(cmntCi+1)+':'+(vi+1);
- var savedInd=mk('span','');savedInd.style.cssText='color:var(--teal2);font-weight:700;font-size:10px;opacity:0;transition:opacity .3s';savedInd.textContent='Saved ✓';
+ var savedInd=mk('span','');savedInd.style.cssText='color:var(--teal2);font-weight:700;font-size:10px;opacity:0;transition:opacity .3s';savedInd.textContent=_X('Saved ✓','Guardado ✓');
  vrefRow.appendChild(vref);vrefRow.appendChild(savedInd);
  var ta=document.createElement('textarea');
  ta.value=note;
@@ -12242,7 +12274,7 @@ function renderCommentary(){
  })(key,vi,ta,savedInd);
  card.appendChild(vrefRow);card.appendChild(ta);list.appendChild(card);
  });
- if(!hasNotes){var m2=mk('div','');m2.style.cssText='padding:40px 20px;text-align:center;color:var(--ink3);font-size:14px';m2.textContent='No notes for '+locBookName(cmntBi)+' '+(cmntCi+1)+'.';list.appendChild(m2);}
+ if(!hasNotes){var m2=mk('div','');m2.style.cssText='padding:40px 20px;text-align:center;color:var(--ink3);font-size:14px';m2.textContent=_X('No notes for ','No hay notas para ')+locBookName(cmntBi)+' '+(cmntCi+1)+'.';list.appendChild(m2);}
  return;
  }
  if(cmntSource==='ai'){
@@ -12274,7 +12306,7 @@ function renderCommentary(){
  card.appendChild(body);
  list.appendChild(card);
  });
- if(!hasAI){var m3=mk('div','');m3.style.cssText='padding:40px 20px;text-align:center;color:var(--ink3);font-size:14px';m3.textContent='No saved AI commentary for '+locBookName(cmntBi)+' '+(cmntCi+1)+'. Open a verse, generate a commentary in the AI tab, then tap Save.';list.appendChild(m3);}
+ if(!hasAI){var m3=mk('div','');m3.style.cssText='padding:40px 20px;text-align:center;color:var(--ink3);font-size:14px';m3.textContent=_X('No saved AI commentary for ','No hay comentario de IA guardado para ')+locBookName(cmntBi)+' '+(cmntCi+1)+_X('. Open a verse, generate a commentary in the AI tab, then tap Save.','. Abre un versículo, genera un comentario en la pestaña IA y pulsa Guardar.');list.appendChild(m3);}
  return;
  }
  if(cmntSource!=='egw'){var m=mk('div','');m.style.cssText='padding:40px 20px;text-align:center;color:var(--ink3);font-size:14px';m.textContent=cmntSource.toUpperCase()+' commentary coming soon.';list.appendChild(m);return;}
@@ -12286,7 +12318,7 @@ function renderCommentary(){
  // Also include verses that have saved EGW quotes but no EGW body
  if(settings.egwQuotes){Object.keys(settings.egwQuotes).forEach(function(key){var pts=key.split('-');if(parseInt(pts[0])===cmntBi&&parseInt(pts[1])===cmntCi){var vi=parseInt(pts[2]);if(!commented.find(function(c){return c.vi===vi;}))commented.push({vi:vi,comment:''});}});}
  commented.sort(function(a,b){return a.vi-b.vi;});
- if(!commented.length){var note=mk('p','');note.style.cssText='padding:40px 20px;color:var(--ink3);text-align:center;font-size:14px';note.textContent='No EGW comments for '+locBookName(cmntBi)+' '+(cmntCi+1)+'.';list.appendChild(note);return;}
+ if(!commented.length){var note=mk('p','');note.style.cssText='padding:40px 20px;color:var(--ink3);text-align:center;font-size:14px';note.textContent=_X('No EGW comments for ','No hay comentarios de EGW para ')+locBookName(cmntBi)+' '+(cmntCi+1)+'.';list.appendChild(note);return;}
  commented.forEach(function(item){
  var fTxt=item.comment;
  var hds=[],m2,sRx=/([A-Z][^\u2014]{2,60})\u2014/g;sRx.lastIndex=0;
@@ -12348,7 +12380,7 @@ function renderCommentary(){
  body.appendChild(bEl);
  });
  var src=mk('div','');src.style.cssText='font-size:11px;color:var(--ink3);margin-top:8px;border-top:1px solid var(--paper3);padding-top:6px;font-style:italic';
- src.textContent='\u2014 Ellen G. White, SDA Bible Commentary';body.appendChild(src);
+ src.textContent=_X('\u2014 Ellen G. White, SDA Bible Commentary','\u2014 Elena G. de White, Comentario bíblico adventista');body.appendChild(src);
  card.appendChild(body);
  list.appendChild(card);
  });
@@ -12393,7 +12425,7 @@ function toggleSplitSync(){
  var btn=ge('splitSyncBtn');
  if(btn){
  btn.style.opacity=splitSyncOn?'1':'.35';
- btn.title=splitSyncOn?'Scroll sync on':'Scroll sync off';
+ btn.title=splitSyncOn?_X('Scroll sync on','Sincronizar desplazamiento: sí'):_X('Scroll sync off','Sincronizar desplazamiento: no');
  }
  var mbtn=ge('splitSyncMenuBtn'),mknob=ge('splitSyncMenuKnob');
  if(mbtn)mbtn.style.background=splitSyncOn?'var(--teal2)':'#ccc';
@@ -12902,7 +12934,7 @@ function showRefPopup(bi,ci,vi,refText,anchorEl){
  txt.textContent=verseText;popup.appendChild(txt);
  // Go to verse button
  var goBtn=mk('button','');goBtn.style.cssText='font-size:12px;font-weight:700;color:#fff;background:var(--teal2);border:none;border-radius:20px;padding:5px 14px;cursor:pointer;width:100%';
- goBtn.textContent='Go to '+refText;
+ goBtn.textContent=_X('Go to ','Ir a ')+refText;
  goBtn.onclick=function(){
  popup.remove();
  closeAllSheets();
