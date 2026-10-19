@@ -1348,7 +1348,7 @@ body.chrome-hidden {
  <!-- Swipe-down search bar -->
  <div class="search-bar" id="searchBar">
  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
- <input class="search-inp" id="searchInp" placeholder="Search the Bible..." oninput="doSearch(this.value)" onkeydown="if(event.key==='Enter'){doSearch(this.value,true);event.preventDefault();}">
+ <input class="search-inp" id="searchInp" placeholder="Search the Bible and commentaries..." oninput="doSearch(this.value)" onkeydown="if(event.key==='Enter'){doSearch(this.value,true);event.preventDefault();}">
  <button class="search-close" id="aiFindBtn" onclick="openAIFind()" title="AI verse finder" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:4px;margin-right:2px">
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg>
  </button>
@@ -3676,7 +3676,7 @@ const UI={
  en:{
  read:'Read',hist:'History',plans:'Plans',more:'More',
  prev:'Prev',next:'Next',cancel:'Cancel',save:'Save',
- search_ph:'Search the Bible\u2026',
+ search_ph:'Search the Bible and commentaries\u2026',
  egw_ph:'EGW Estate API integration coming.',
  pioneer_ph:'My notes will appear here.',
  sdabc_ph:'SDA Bible Commentary coming.',
@@ -3728,7 +3728,7 @@ const UI={
  nl:{
  read:'Lezen',hist:'Geschiedenis',plans:'Plannen',more:'Meer',
  prev:'Vorige',next:'Volgende',cancel:'Annuleer',save:'Opslaan',
- search_ph:'Zoek in de Bijbel\u2026',
+ search_ph:'Zoek in de Bijbel en commentaren\u2026',
  egw_ph:'EGW Estate API integratie binnenkort.',
  pioneer_ph:'Mijn notities verschijnen hier.',
  sdabc_ph:'SDA Bijbelcommentaar binnenkort.',
@@ -3780,7 +3780,7 @@ const UI={
  es:{
  read:'Leer',hist:'Historial',plans:'Planes',more:'M\u00E1s',
  prev:'Anterior',next:'Siguiente',cancel:'Cancelar',save:'Guardar',
- search_ph:'Buscar en la Biblia\u2026',
+ search_ph:'Buscar en la Biblia y en los comentarios\u2026',
  egw_ph:'Integraci\u00F3n API EGW pr\u00F3ximamente.',
  pioneer_ph:'Comentario de pioneros pr\u00F3ximamente.',
  sdabc_ph:'Comentario B\u00EDblico ASD pr\u00F3ximamente.',
