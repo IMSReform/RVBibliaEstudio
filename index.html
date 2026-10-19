@@ -1465,6 +1465,12 @@ body.chrome-hidden {
  <div class="sheet-hdr"><h2 id="quizTitle">Bible Quiz</h2><button class="sheet-close" onclick="closeSheet('quiz')">&times;</button></div>
  <div class="sheet-body" id="quizBody" style="overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(100vh - 140px);max-height:calc(100dvh - 140px)"></div>
 </div>
+<!-- Estudios sobre Cristo -->
+<div class="sheet" id="sheet-cristo" style="max-height:calc(100vh - 80px);max-height:calc(100dvh - 80px)">
+ <div class="sheet-handle"></div>
+ <div class="sheet-hdr"><h2 id="cristoTitle">Estudios sobre Cristo</h2><button class="sheet-close" onclick="closeSheet('cristo')">&times;</button></div>
+ <div class="sheet-body" id="cristoBody" style="overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(100vh - 140px);max-height:calc(100dvh - 140px)"></div>
+</div>
 <!-- Saved -->
 <div class="sheet" id="sheet-saved" style="max-height:calc(100vh - 80px);max-height:calc(100dvh - 80px)">
  <div class="sheet-handle"></div>
@@ -5655,6 +5661,7 @@ function buildAC(el,vi,bi,ci,txt){
  };
  panes[1].appendChild(_egwFetchBtn);
  }
+ var _crHost=mk('div','');panes[1].appendChild(_crHost);try{_cristoChips(bi,ci,vi,_crHost);}catch(e){}
  // EGW saved quotes section — full management here
  var savedQuotes=(settings.egwQuotes&&settings.egwQuotes[key])||[];
  var qDiv=mk('div','');qDiv.style.cssText='margin-top:12px;border-top:1px solid rgba(34,163,154,.2);padding-top:10px';
@@ -6209,6 +6216,116 @@ function navToRef(ref){
 }
 
 // \u2500\u2500 VERSE ACTION MENU \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+
+// ── ESTUDIOS SOBRE CRISTO (Apéndices A–C del Comentario bíblico adventista) ──
+var CRISTO=null,_cristoP=null,_cristoIdx=null,_cristoA=-1,_cristoS=-1;
+function _cristoLoad(){
+ if(CRISTO)return Promise.resolve(CRISTO);
+ if(!_cristoP)_cristoP=_fetchJSON('data/egw_cristo.json').then(function(d){
+  if(!d){_cristoP=null;return null;}
+  CRISTO=d.apps||d;_cristoIdx={};
+  CRISTO.forEach(function(a,ai){a.sections.forEach(function(sc,si){sc.refs.forEach(function(r){
+   for(var v=r[2];v<=r[3];v++){var k=r[0]+'-'+(r[1]-1)+'-'+(v-1);(_cristoIdx[k]=_cristoIdx[k]||[]);
+    if(!_cristoIdx[k].some(function(x){return x[0]===ai&&x[1]===si;}))_cristoIdx[k].push([ai,si]);}
+  });});});
+  return CRISTO;
+ });
+ return _cristoP;
+}
+function _cristoTarget(k){
+ var p=k.split(':');var sc=CRISTO&&CRISTO[+p[1]]&&CRISTO[+p[1]].sections[+p[2]];
+ var r=sc&&sc.refs[0];return r?[r[0],r[1]-1,r[2]-1]:[CUR.bi,CUR.ci,0];
+}
+function _cristoRefLabel(r){return locBookName(r[0])+' '+r[1]+':'+r[2]+(r[3]>r[2]?'-'+r[3]:'');}
+function _cristoGo(bi,ci,vi){
+ try{closeAllSheets();}catch(e){}
+ try{closeSP();closeAll();}catch(e){}
+ CUR.bi=bi;CUR.ci=ci;renderChapter();
+ setTimeout(function(){var row=ge('vrow-'+vi);if(row)row.scrollIntoView({behavior:'smooth',block:'center'});},300);
+}
+function _cristoChips(bi,ci,vi,host){
+ if(LANG!=='es')return;
+ _cristoLoad().then(function(){
+  var L=_cristoIdx&&_cristoIdx[bi+'-'+ci+'-'+vi];if(!L||!L.length)return;
+  var box=mk('div','');box.style.cssText='margin-top:14px;border-top:1px solid rgba(34,163,154,.2);padding-top:10px';
+  var lb=mk('div','');lb.style.cssText='font-size:10px;font-weight:700;color:var(--teal2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px';
+  lb.textContent='Más sobre este tema · Estudios sobre Cristo';box.appendChild(lb);
+  L.slice(0,6).forEach(function(x){
+   var sc=CRISTO[x[0]].sections[x[1]];
+   var b=mk('button','');b.style.cssText='display:block;width:100%;text-align:left;font-size:13px;line-height:1.4;color:var(--ink1);background:var(--paper2);border:1px solid var(--paper3);border-radius:12px;padding:9px 12px;margin-bottom:6px;cursor:pointer;font-family:inherit';
+   b.textContent='Apéndice '+CRISTO[x[0]].id+' · '+sc.n+'. '+sc.title;
+   b.onclick=function(e){e.stopPropagation();openCristo(x[0],x[1]);};
+   box.appendChild(b);
+  });
+  host.appendChild(box);
+ });
+}
+function openCristo(ai,si){_cristoA=ai;_cristoS=si;openSheet('cristo');}
+function renderCristo(){
+ var body=ge('cristoBody');if(!body)return;body.innerHTML='';
+ var ttl=ge('cristoTitle');
+ if(!CRISTO){
+  var ld=mk('div','');ld.style.cssText='padding:40px 20px;text-align:center;color:var(--ink3);font-size:14px';ld.textContent='Cargando…';body.appendChild(ld);
+  _cristoLoad().then(function(d){if(!d){ld.textContent='No se pudieron cargar los estudios. Revisa tu conexión e inténtalo de nuevo.';return;}renderCristo();});
+  return;
+ }
+ if(_cristoA<0||_cristoS<0){
+  if(ttl)ttl.textContent='Estudios sobre Cristo';
+  var intro=mk('p','');intro.style.cssText='margin:14px 16px 4px;font-size:13px;line-height:1.6;color:var(--ink3)';
+  intro.textContent='Compilación de las declaraciones de Elena G. de White sobre la divinidad de Cristo, su naturaleza en la encarnación y la expiación, de los apéndices del Comentario bíblico adventista. Cada tema se enlaza con versículos relacionados.';
+  body.appendChild(intro);
+  CRISTO.forEach(function(a,ai){
+   var h=mk('div','');h.style.cssText='margin:18px 16px 6px;font-size:11px;font-weight:800;color:var(--teal2);text-transform:uppercase;letter-spacing:.6px';
+   h.textContent='Apéndice '+a.id+' · '+a.title;body.appendChild(h);
+   var lastPart=null;
+   a.sections.forEach(function(sc,si){
+    if(sc.part&&sc.part!==lastPart){lastPart=sc.part;var ph=mk('div','');ph.style.cssText='margin:10px 16px 4px;font-size:12px;font-weight:700;color:var(--ink2)';ph.textContent=sc.part;body.appendChild(ph);}
+    var row=mk('div','');row.style.cssText='display:flex;align-items:center;gap:12px;margin:6px 16px;padding:11px 14px;background:var(--paper2);border:1px solid var(--paper3);border-radius:14px;cursor:pointer';
+    var n=mk('span','');n.style.cssText='font-size:12px;font-weight:800;color:var(--teal2);min-width:30px';n.textContent=sc.n+'.';
+    var t=mk('span','');t.style.cssText='flex:1;font-size:14px;line-height:1.4;color:var(--ink1)';t.textContent=sc.title;
+    var c=mk('span','');c.style.cssText='font-size:11px;color:var(--ink3)';c.textContent=sc.quotes.length;
+    row.appendChild(n);row.appendChild(t);row.appendChild(c);
+    row.onclick=function(){_cristoA=ai;_cristoS=si;renderCristo();ge('cristoBody').scrollTop=0;};
+    body.appendChild(row);
+   });
+  });
+  var sp=mk('div','');sp.style.height='24px';body.appendChild(sp);
+  return;
+ }
+ var a=CRISTO[_cristoA],sc=a.sections[_cristoS];
+ if(ttl)ttl.textContent='Apéndice '+a.id;
+ var bar=mk('div','');bar.style.cssText='display:flex;align-items:center;gap:8px;padding:10px 16px 0';
+ var back=mk('button','');back.style.cssText='background:var(--paper2);border:1px solid var(--paper3);border-radius:10px;font-size:13px;color:var(--ink2);padding:6px 12px;cursor:pointer;font-family:inherit';back.textContent='‹ Temas';
+ back.onclick=function(){_cristoA=-1;_cristoS=-1;renderCristo();};
+ bar.appendChild(back);body.appendChild(bar);
+ var h=mk('h3','');h.style.cssText='margin:14px 16px 4px;font-size:18px;line-height:1.3;color:var(--ink1)';h.textContent=sc.n+'. '+sc.title;body.appendChild(h);
+ var sub=mk('div','');sub.style.cssText='margin:0 16px 10px;font-size:11px;font-weight:700;color:var(--teal2);text-transform:uppercase;letter-spacing:.5px';sub.textContent=a.title+(sc.part?' · '+sc.part:'');body.appendChild(sub);
+ // verse chips
+ var vr=mk('div','');vr.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin:0 16px 12px';
+ var vl=mk('span','');vl.style.cssText='font-size:11px;color:var(--ink3);align-self:center;margin-right:2px';vl.textContent='Versículos relacionados:';vr.appendChild(vl);
+ sc.refs.forEach(function(r){
+  var b=mk('button','');b.style.cssText='font-size:12px;font-weight:700;color:var(--teal2);background:transparent;border:1.5px solid var(--teal2);border-radius:16px;padding:3px 10px;cursor:pointer;font-family:inherit';
+  b.textContent=_cristoRefLabel(r);b.onclick=function(){_cristoGo(r[0],r[1]-1,r[2]-1);};vr.appendChild(b);
+ });
+ body.appendChild(vr);
+ if(_cristoS===0&&a.intro){var ip=mk('p','');ip.style.cssText='margin:0 16px 12px;padding:10px 12px;font-size:13px;line-height:1.6;color:var(--ink2);background:var(--paper2);border-radius:12px;font-style:italic';ip.textContent=a.intro;body.appendChild(ip);}
+ var key='cr:'+_cristoA+':'+_cristoS;
+ sc.quotes.forEach(function(q,qi){
+  var card=mk('div','');card.style.cssText='margin:8px 16px;padding:12px 14px;background:var(--paper);border:1.5px solid var(--paper3);border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.05)';
+  var e=mkEgwBody(q,qi,key);
+  e.style.cssText='margin:0;font-size:var(--cfs,14px);line-height:1.85;color:var(--ink1);font-family:Roboto,system-ui,sans-serif;-webkit-user-select:text;user-select:text';
+  card.appendChild(e);body.appendChild(card);
+ });
+ // prev / next
+ var flat=[];CRISTO.forEach(function(aa,ai2){aa.sections.forEach(function(ss,si2){flat.push([ai2,si2]);});});
+ var pos=flat.findIndex(function(x){return x[0]===_cristoA&&x[1]===_cristoS;});
+ var nav=mk('div','');nav.style.cssText='display:flex;gap:10px;margin:14px 16px 28px';
+ function nb(txt,to){var b=mk('button','');b.style.cssText='flex:1;font-size:13px;font-weight:700;color:var(--teal2);background:var(--paper2);border:1px solid var(--paper3);border-radius:12px;padding:10px;cursor:pointer;font-family:inherit';b.textContent=txt;
+  if(!to){b.style.opacity='.35';b.disabled=true;}else b.onclick=function(){_cristoA=to[0];_cristoS=to[1];renderCristo();ge('cristoBody').scrollTop=0;};nav.appendChild(b);}
+ nb('‹ Anterior',pos>0?flat[pos-1]:null);nb('Siguiente ›',pos<flat.length-1?flat[pos+1]:null);
+ body.appendChild(nav);
+}
 
 // ── EGW quote highlighting / underlining (per quote, offsets in its text) ──
 var _egwSel=null;
@@ -9553,6 +9670,7 @@ function openSheet(id){
  else if(id==='aifind')renderAIFind();
  else if(id==='dailytext')renderDailyText();
  else if(id==='quiz')renderQuizHome();
+ else if(id==='cristo')renderCristo();
  else if(id==='cmnt'){cmntBi=CUR.bi;cmntCi=CUR.ci;renderCommentary();}
 }
 function closeSheet(id){
@@ -9741,9 +9859,10 @@ function renderMore(){
  {id:'bs',icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',label:T('studies'),sub:{en:'30+34 structured lessons',nl:'30+34 gestructureerde lessen',es:'30+34 lecciones estructuradas'}},
  {id:'threads',icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="6" cy="18" r="3"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/><line x1="8.5" y1="15.5" x2="8.5" y2="8.5"/></svg>',label:{en:'My Threads',nl:'Mijn draden',es:'Mis hilos'}[LANG]||'My Threads',sub:{en:'Linked words & study connections',nl:'Gekoppelde woorden & studieverbanden',es:'Palabras vinculadas y conexiones'}},
  {id:'dailytext',icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',label:{en:'Daily Text',nl:'Dagtekst',es:'Texto diario'}[LANG]||'Daily Text',sub:{en:'Daily verse pop-up & history',nl:'Dagelijks vers pop-up & geschiedenis',es:'Versículo diario y su historial'}},
+ {id:'cristo',icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 9h12"/></svg>',label:'Estudios sobre Cristo',sub:{es:'Apéndices del Comentario bíblico: divinidad, encarnación y expiación',en:'Christ studies'}},
  {id:'study',icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="8" height="16" rx="1.5"/><rect x="13" y="4" width="8" height="16" rx="1.5"/><line x1="15.5" y1="8" x2="18.5" y2="8"/><line x1="15.5" y1="11.5" x2="18.5" y2="11.5"/><line x1="15.5" y1="15" x2="17.5" y2="15"/></svg>',label:{en:'Study Mode',nl:'Studiemodus',es:'Modo de estudio'}[LANG]||'Study Mode',sub:{en:'Best for iPad and/or computer — read on one side, write notes on the other',nl:'Beste voor iPad en/of computer — lezen aan één kant, notities schrijven aan de andere',es:'Ideal para iPad y/o computadora — lee de un lado, escribe notas del otro'}}
  ];
- items.forEach(function(item){
+ items.filter(function(it){return it.id!=='cristo'||LANG==='es';}).forEach(function(item){
  var row=mk('div','');
  row.style.cssText='display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--paper2);cursor:pointer;transition:background .12s;position:relative;padding-right:28px';
  var icon=mk('div','');icon.style.cssText='width:40px;height:40px;border-radius:10px;background:var(--paper2);display:flex;align-items:center;justify-content:center;color:var(--teal);flex-shrink:0';
@@ -11161,6 +11280,7 @@ function initTextSelection(){
  if(_es){
  _egwSel=_es;
  var _kp=_es.k.split('-').map(Number);
+ if(isNaN(_kp[0])&&typeof _cristoTarget==='function'){_kp=_cristoTarget(_es.k);}
  vamTarget={bi:_kp[0],ci:_kp[1],vi:_kp[2],txt:selectedText};
  if(HL_MODE){_egwApply(HL_TYPE==='ul'?'ul':'hl',HL_COLOR);}
  else showVAM(_kp[0],_kp[1],_kp[2],selectedText,anchor,null);
@@ -12353,30 +12473,10 @@ function renderCommentary(){
  secs.forEach(function(sec,si){
  if(si>0){var sep=mk('div','');sep.style.cssText='height:1px;background:var(--paper3);margin:8px 0';body.appendChild(sep);}
  if(sec.title){var tEl=mk('div','');tEl.style.cssText='font-size:10px;font-weight:700;color:var(--teal2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px';tEl.textContent=sec.title;body.appendChild(tEl);}
- var bEl=mk('div','egw-body');bEl.style.cssText='font-size:var(--cfs,14px);line-height:1.85;color:var(--ink1);font-family:Roboto,system-ui,sans-serif;-webkit-user-select:text;user-select:text;font-style:normal';
  var bt=sec.body.trimEnd();
  var btFull='.!?)"\u2019'.indexOf(bt[bt.length-1])<0?bt+'\u2026':bt;
- // Render existing sel-type highlight inside commentary text if offsets match
- var hlKey3=cmntBi+'-'+cmntCi+'-'+item.vi;
- var hlVal3=settings.highlights&&settings.highlights[hlKey3];
- if(hlVal3&&hlVal3.type==='sel'&&hlVal3.start>=0&&hlVal3.end>hlVal3.start){
- var hlColors2={y:'rgba(255,213,0,.45)',g:'rgba(34,163,154,.30)',b:'rgba(30,120,220,.25)',p:'rgba(200,50,160,.25)'};
- var bg3=hlColors2[hlVal3.col]||hlColors2.y;
- // Find the highlighted text in the commentary body
- var hlIdx=btFull.indexOf(hlVal3.text);
- if(hlIdx>=0){
- if(hlIdx>0)bEl.appendChild(document.createTextNode(btFull.slice(0,hlIdx)));
- var mark3=document.createElement('mark');
- mark3.style.cssText='background:'+bg3+';border-radius:2px;padding:1px 0';
- mark3.appendChild(document.createTextNode(hlVal3.text));
- bEl.appendChild(mark3);
- if(hlIdx+hlVal3.text.length<btFull.length)bEl.appendChild(document.createTextNode(btFull.slice(hlIdx+hlVal3.text.length)));
- } else {
- bEl.textContent=btFull;
- }
- } else {
- bEl.textContent=btFull;
- }
+ var bEl=mkEgwBody(btFull,si,cmntBi+'-'+cmntCi+'-'+item.vi);
+ bEl.style.cssText='margin:0;font-size:var(--cfs,14px);line-height:1.85;color:var(--ink1);font-family:Roboto,system-ui,sans-serif;-webkit-user-select:text;user-select:text;font-style:normal';
  body.appendChild(bEl);
  });
  var src=mk('div','');src.style.cssText='font-size:11px;color:var(--ink3);margin-top:8px;border-top:1px solid var(--paper3);padding-top:6px;font-style:italic';
