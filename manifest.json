@@ -2,11 +2,19 @@
   "name": "SMI Biblia Estudio",
   "short_name": "SMI Biblia Estudio",
   "icons": [
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-1024.png", "sizes": "1024x1024", "type": "image/png" }
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
   ],
   "display": "standalone",
-  "background_color": "#08222c",
-  "theme_color": "#08222c",
+  "background_color": "#0d4f6c",
+  "theme_color": "#0d4f6c",
   "start_url": "."
 }
