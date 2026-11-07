@@ -4374,7 +4374,7 @@ async function aiCallProvider(provider, prompt, systemPrompt, maxTokens){
  body:JSON.stringify({
  system_instruction:{parts:[{text:systemPrompt}]},
  contents:[{parts:[{text:prompt}]}],
- generationConfig:{maxOutputTokens:maxTokens}
+ generationConfig:{maxOutputTokens:maxTokens+1024,thinkingConfig:{thinkingBudget:0}}
  })
  });
  var d=await r.json();
@@ -4382,7 +4382,7 @@ async function aiCallProvider(provider, prompt, systemPrompt, maxTokens){
  var isQ=d.error.status==='RESOURCE_EXHAUSTED'||(d.error.message||'').toLowerCase().includes('quota')||(d.error.message||'').toLowerCase().includes('rate');
  throw Object.assign(new Error(d.error.message||'Gemini error'),{isQuota:isQ});
  }
- return d.candidates[0].content.parts[0].text;
+ return ((d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[]).map(function(p){return p.text||'';}).join('');
  }
  throw new Error('Unknown provider: '+provider);
 }
@@ -9187,6 +9187,8 @@ function studyBindPalmGuard(){
  }
  ['pointerdown','pointermove','pointerover','pointerup','pointerenter'].forEach(function(t){sm.addEventListener(t,seenPen,true);});
  function isTextField(el){return el&&el.closest&&el.closest('textarea,input');}
+ // Palm rejection is for iPad + Apple Pencil only. On a phone a thumb tap is a big contact patch too, so never block there.
+ var _isPhone=Math.min(screen.width,screen.height)<700;
  function stop(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}
  // Touch sizes: a resting palm is a big contact patch, a fingertip is not.
  sm.addEventListener('touchstart',function(e){
@@ -9197,12 +9199,12 @@ function studyBindPalmGuard(){
    allStylus=false;
    if((t.radiusX||0)>=22||(t.radiusY||0)>=22)palm=true;
   }
-  if(allStylus)return;
+  if(allStylus||_isPhone)return;
   var inRead=e.target&&e.target.closest&&e.target.closest('#studyReadPane');
  if(palm||(_studyPenNear()&&!inRead)){_studyBlockT=Date.now();stop(e);}
  },{capture:true,passive:false});
  sm.addEventListener('pointerdown',function(e){
-  if(e.pointerType!=='touch')return;
+  if(e.pointerType!=='touch'||_isPhone)return;
   var inRead2=e.target&&e.target.closest&&e.target.closest('#studyReadPane');
   if((_studyPenNear()&&!inRead2)||(e.width>=44&&e.height>=44)){_studyPalmBlocked[e.pointerId]=true;_studyBlockT=Date.now();stop(e);}
  },{capture:true,passive:false});
@@ -9215,7 +9217,7 @@ function studyBindPalmGuard(){
  });
  ['click','mousedown','mouseup','dblclick','contextmenu'].forEach(function(t){
   sm.addEventListener(t,function(e){
-   if(_studyBlockT>_studyPenT&&Date.now()-_studyBlockT<1500&&e.isTrusted)stop(e);
+   if(!_isPhone&&_studyBlockT>_studyPenT&&Date.now()-_studyBlockT<1500&&e.isTrusted)stop(e);
   },true);
  });
  // The yellow paper, toolbar and top bar are never native-selectable text.
@@ -9982,7 +9984,11 @@ async function runAIFind(query){
  var raw=await aiCall(query,sysPrompt[LANG]||sysPrompt.en,600);
  raw=raw||'';
  var matches=[];
- try{matches=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){}
+ var _cl=raw.replace(/```json|```/g,'').trim();
+ try{var _i0=_cl.indexOf('['),_i1=_cl.lastIndexOf(']');matches=JSON.parse(_i0>=0&&_i1>_i0?_cl.slice(_i0,_i1+1):_cl);}catch(e){
+  matches=[];(_cl.match(/\{[^{}]*"ref"[^{}]*\}/g)||[]).forEach(function(o){try{matches.push(JSON.parse(o));}catch(e2){}});
+ }
+ if(!Array.isArray(matches))matches=[];
  ldr.remove();
  if(!matches.length){
  var none=mk('div','');none.style.cssText='font-size:13px;color:var(--ink3);padding:8px 0';
