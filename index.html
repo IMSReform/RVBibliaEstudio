@@ -13,7 +13,12 @@
 // just silently skip this instead of erroring.
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
  window.addEventListener('load', function(){
- navigator.serviceWorker.register('sw.js').catch(function(e){
+ navigator.serviceWorker.register('sw.js').then(function(){
+ // Once the app is up and we're online, quietly download all book data so everything works offline.
+ return navigator.serviceWorker.ready;
+ }).then(function(reg){
+ setTimeout(function(){ if(navigator.onLine&&reg.active)reg.active.postMessage({type:'precache'}); },6000);
+ }).catch(function(e){
  console.warn('Service worker registration failed (offline mode will not be available):', e);
  });
  });
