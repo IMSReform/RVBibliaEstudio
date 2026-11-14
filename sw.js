@@ -3,7 +3,7 @@
 // - data/*.json: cache-first with background refresh, so each book works offline once it has been opened.
 // - After the first load the page asks this worker to download ALL book data in the background
 //   (message {type:'precache'}), so the whole Bible + commentaries work with no connection.
-var VERSION = 'v2';
+var VERSION = 'v3';
 var SHELL = 'rb-es-shell-' + VERSION;
 var DATA = 'rb-es-data-v1'; // data cache survives app-shell updates
 
@@ -92,7 +92,7 @@ function precache() {
         return fetch(u).then(function (r) { if (r && r.ok) return c.put(u, r); }).catch(function () {});
       }).then(worker);
     }
-    return Promise.all([worker(), worker(), worker(), worker()]);
+    return Promise.all([worker(), worker()]);
   }).then(function () { _busy = false; }, function () { _busy = false; });
 }
 self.addEventListener('message', function (e) {
