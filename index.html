@@ -8,7 +8,7 @@
  <link rel="manifest" href="manifest.json">
 <script>
 /* AI: translated mode labels + Gemini model migration (2.5-flash is closed to new users -> 3.8-flash, falls back to 2.5 if the new id is rejected) */
-var _AI_LBL={devotional:{es:'Devocional',nl:'Devotioneel',de:'Andacht'},language:{es:'Idioma original',nl:'Grondtaal',de:'Ursprache'},context:{es:'Contexto bíblico',nl:'Bijbelse context',de:'Biblischer Kontext'},sda:{es:'Perspectiva ASD',nl:'ZDA-perspectief',de:'STA-Perspektive'},perspectives:{es:'Otros enfoques',nl:'Andere visies',de:'Andere Sichtweisen'}};
+var _AI_LBL={devotional:{es:'Devocional',nl:'Devotioneel',de:'Andacht'},language:{es:'Idioma original',nl:'Grondtaal',de:'Ursprache'},context:{es:'Contexto bíblico',nl:'Bijbelse context',de:'Biblischer Kontext'},sda:{es:'Perspectiva ASD',nl:'ZDA-perspectief',de:'STA-Perspektive'},perspectives:{es:'Otros enfoques',nl:'Andere visies',de:'Andere Sichtweisen'},jewish:{es:'Comentario judío',nl:'Joodse commentaar',de:'Jüdische Auslegung'}};
 function _aiLbl(id,fb){var m=_AI_LBL[id];return (m&&typeof LANG!=='undefined'&&m[LANG])||fb;}
 (function(){
  var _of=window.fetch;
@@ -6192,8 +6192,10 @@ function buildAC(el,vi,bi,ci,txt){
  {id:'context',label:'Bible Context',en:'Explain how this verse fits its context: the immediate passage, the chapter, the book, and parallel passages elsewhere in Scripture (typology, cross-references, progressive revelation).',nl:'Leg uit hoe dit vers past in de context: de directe passage, het hoofdstuk, het boek en parallelle teksten (typologie, kruisverwijzingen).'},
  {id:'sda',label:'SDA Perspective',en:'Give an SDA Adventist Reform Movement perspective: how does this verse relate to the Sabbath, health, the sanctuary, the three angels messages, the great controversy, or the character of God?',nl:'Geef een SDA Reformatiebeweging perspectief: Sabbat, gezondheid, heiligdom, drie engelenboodschappen, grote strijd of karakter van God.'},
  {id:'perspectives',label:'Other Views',en:'Show how different Christian traditions interpret this verse: Catholic, Lutheran, Reformed/Calvinist, Baptist, Pentecostal, and Eastern Orthodox. Note where they agree and where they differ from each other.',nl:'Laat zien hoe verschillende christelijke tradities dit vers interpreteren: Katholiek, Luthers, Gereformeerd, Baptistisch, Pinksterbeweging en Oosters-Orthodox. Geef aan waar ze overeenstemmen en van elkaar verschillen.'},
+ {id:'jewish',label:'Jewish Commentary',en:'Give the Jewish perspective on this verse: what the Rabbinic tradition says (Midrash, Talmud, Targum, Rashi, Ramban, Ibn Ezra, Maimonides and other classical commentators). For a New Testament verse, give the Jewish background instead: the Hebrew Bible passages it echoes, Second Temple and Rabbinic parallels, and how Jewish readers have understood the same idea. Quote only sources you are confident exist, name them (e.g. Bereshit Rabbah, b. Sanhedrin), and clearly say when you are uncertain or when the tradition is silent. Keep it concise and complete.',nl:'Geef het Joodse perspectief op dit vers: wat de rabbijnse traditie zegt (Midrasj, Talmoed, Targoem, Rasji, Ramban, Ibn Ezra, Maimonides en andere klassieke commentatoren). Bij een Nieuwtestamentisch vers: geef de Joodse achtergrond, namelijk de Hebreeuwse bijbelteksten waarnaar verwezen wordt, parallellen uit de Tweede-Tempeltijd en de rabbijnse literatuur, en hoe Joodse lezers hetzelfde idee begrepen hebben. Citeer alleen bronnen waarvan je zeker weet dat ze bestaan, noem ze bij naam (bijv. Bereshit Rabba, b. Sanhedrin) en zeg duidelijk wanneer je onzeker bent of de traditie zwijgt. Wees beknopt en volledig.',es:'Da la perspectiva judía sobre este versículo: lo que dice la tradición rabínica (Midrash, Talmud, Targum, Rashi, Rambán, Ibn Ezra, Maimónides y otros comentaristas clásicos). Si es un versículo del Nuevo Testamento, da el trasfondo judío: los pasajes de la Biblia hebrea que resuena, paralelos del Segundo Templo y de la literatura rabínica, y cómo los lectores judíos han entendido la misma idea. Cita solo fuentes de cuya existencia estés seguro, nómbralas (p. ej. Bereshit Rabá, b. Sanhedrín) y di claramente cuándo no estés seguro o cuando la tradición guarda silencio. Sé conciso y completo.'}
  ];
  var _aiMode='devotional';
+ function _aiHas(m){var t=settings.aiNotes&&settings.aiNotes[key+'-'+m];return !!(t&&(''+t).trim());}
  // Each commentary type is stored under its OWN key (verse key + mode), so
  // generating "Bible Context" no longer overwrites/hides a saved "Devotional"
  // commentary — every type the user generates stays available side by side.
@@ -6209,45 +6211,49 @@ function buildAC(el,vi,bi,ci,txt){
  var aBtn=mk('button','');aBtn.style.cssText='display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:transparent;color:var(--teal2);border:1.5px solid var(--teal2);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s,color .15s';
  var aLdr=mk('div','');aLdr.style.cssText='display:none;align-items:center;gap:8px;padding:4px 0;color:var(--ink3);font-size:13px';
  aLdr.innerHTML='<div class="spin"></div><span>'+T('ai_load')+'</span>';
+ var aNew=mk('div','');aNew.style.cssText='display:none;margin-bottom:6px;font-family:Roboto,system-ui,sans-serif;font-size:var(--cfs,14px);line-height:1.8';
  var aRsp=mk('div','');aRsp.style.cssText='font-family:Roboto,system-ui,sans-serif;font-size:var(--cfs,14px);line-height:1.8';
  var ref=locBookName(bi)+' '+(ci+1)+':'+(vi+1);
- // (Re)draws the Generate/Regenerate/saved-text area for whichever mode is
- // currently selected — called on load and every time the mode is switched.
+
+ function _aiFirstFree(){var f0=_aiModes.filter(function(m){return !_aiHas(m.id);})[0];return f0?f0.id:'devotional';}
+ _aiMode=_aiFirstFree();
+ function _aiLblOf(id){return _aiLbl(id,(_aiModes.filter(function(m){return m.id===id;})[0]||{}).label||id);}
+ // Every saved commentary type is listed one under the other, each with its own subtitle and a divider;
+ // the chips above choose which NEW type the generate button creates.
  function _renderAIModeUI(){
- aRsp.innerHTML='';aRsp.style.display='none';aBtn.style.display='';aBtn.textContent=T('ai_btn');
- var mLabel=(_aiModes.filter(function(m){return m.id===_aiMode;})[0]||{}).label||_aiMode;mLabel=_aiLbl(_aiMode,mLabel);
- var savedTxt=settings.aiNotes&&settings.aiNotes[_aiKeyFor(_aiMode)];
- if(savedTxt){
- aRsp.innerHTML=mdToHtml(savedTxt);aRsp.style.display='block';
- var _savedLbl2=mk('div','');_savedLbl2.style.cssText='margin-top:6px;font-size:11px;color:var(--ink3);font-style:italic';
- _savedLbl2.textContent='✓ Saved — '+mLabel;aRsp.appendChild(_savedLbl2);
- var _regenBtn=mk('button','');_regenBtn.style.cssText='margin-top:4px;font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0';
- _regenBtn.textContent=_X('Regenerate ','Regenerar ')+mLabel;
- _regenBtn.onclick=function(){delete settings.aiNotes[_aiKeyFor(_aiMode)];saveSettings();_renderAIModeUI();};
- aRsp.appendChild(_regenBtn);
- aBtn.style.display='none';
- }
+ _modeWrap.querySelectorAll('button').forEach(function(b){var id=b.dataset.aiMode;if(!id)return;var base=_aiLblOf(id);b.textContent=_aiHas(id)?base+' \u2713':base;b.style.background=id===_aiMode?'var(--teal2)':'var(--paper2)';b.style.color=id===_aiMode?'#fff':'var(--ink2)';});
+ aNew.innerHTML='';aNew.style.display='none';aRsp.innerHTML='';
+ var any=false;
+ _aiModes.forEach(function(m){
+ if(!_aiHas(m.id))return;any=true;
+ var sec=mk('div','');sec.dataset.aiSec=m.id;sec.style.cssText='padding:8px 0 10px;border-top:1px solid var(--paper3)';
+ var h=mk('div','');h.style.cssText='font-size:11px;font-weight:800;color:var(--teal2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px';h.textContent=_aiLblOf(m.id);
+ var bd=mk('div','');bd.innerHTML=mdToHtml(settings.aiNotes[key+'-'+m.id]);
+ var rg=mk('button','');rg.style.cssText='margin-top:4px;font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0';
+ rg.textContent=_X('Regenerate','Regenerar');
+ rg.onclick=function(){delete settings.aiNotes[key+'-'+m.id];if(typeof aiCache!=='undefined')delete aiCache[key+'-'+m.id];saveSettings();_aiMode=m.id;_renderAIModeUI();};
+ sec.appendChild(h);sec.appendChild(bd);sec.appendChild(rg);aRsp.appendChild(sec);
+ });
+ aRsp.style.display=any?'block':'none';
+ if(_aiHas(_aiMode)){aBtn.style.display='none';}
+ else{aBtn.style.display='';aBtn.textContent=T('ai_btn')+' \u2014 '+_aiLblOf(_aiMode);}
  }
  _aiModes.forEach(function(m){
- var mb=mk('button','');mb.style.cssText='font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--paper3);background:'+(m.id==='devotional'?'var(--teal2)':'var(--paper2)');
- mb.style.color=m.id==='devotional'?'#fff':'var(--ink2)';
- mb.style.cursor='pointer';mb.style.fontWeight='600';mb.textContent=_aiLbl(m.id,m.label);
+ var mb=mk('button','');mb.style.cssText='font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--paper3);background:var(--paper2)';
+ mb.dataset.aiMode=m.id;mb.style.cursor='pointer';mb.style.fontWeight='600';mb.textContent=_aiLblOf(m.id);
  mb.onclick=function(){
- _aiMode=m.id;
- _modeWrap.querySelectorAll('button').forEach(function(b){
- b.style.background=b===mb?'var(--teal2)':'var(--paper2)';
- b.style.color=b===mb?'#fff':'var(--ink2)';
- });
- _renderAIModeUI();
+ _aiMode=m.id;_renderAIModeUI();
+ if(_aiHas(m.id)){var sec=aRsp.querySelector('[data-ai-sec="'+m.id+'"]');if(sec&&sec.scrollIntoView)sec.scrollIntoView({block:'nearest',behavior:'smooth'});}
  };
  _modeWrap.appendChild(mb);
  });
  panes[3].appendChild(_modeWrap);
  _renderAIModeUI();
- (function(aBtn,aLdr,aRsp,ref,txt){
- aBtn.onclick=function(){aBtn._mode=_aiMode;loadAI(_aiKeyFor(_aiMode),aBtn,aLdr,aRsp,ref,txt);};
- })(aBtn,aLdr,aRsp,ref,txt);
- panes[3].appendChild(aBtn);panes[3].appendChild(aLdr);panes[3].appendChild(aRsp);
+ aNew._onSaved=function(){_renderAIModeUI();};
+ (function(aBtn,aLdr,aNew,ref,txt){
+ aBtn.onclick=function(){aBtn._mode=_aiMode;loadAI(key+'-'+_aiMode,aBtn,aLdr,aNew,ref,txt);};
+ })(aBtn,aLdr,aNew,ref,txt);
+ panes[3].appendChild(aBtn);panes[3].appendChild(aLdr);panes[3].appendChild(aNew);panes[3].appendChild(aRsp);
  // 4: My Notes — inline notepad, auto-saves as you type (scrolls internally once it gets long)
  var p4=document.createElement('div');p4.style.cssText='padding:4px 0';
  var noteLbl=mk('div','');noteLbl.style.cssText='font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center';
@@ -6357,7 +6363,8 @@ async function loadAI(key,btn,ldr,resp,ref,txt){
  language:{en:'Hebrew/Greek scholar. Analyze the original language of this verse: key word meanings, etymology, verb tenses, grammar, and how translation choices affect meaning. Use actual Hebrew/Greek words. Make sure your answer is fully complete — never end mid-sentence. Aim for under 300 words total.',nl:'Analyseer het Hebreeuws/Grieks: sleutelwoorden, etymologie, grammatica en vertaalkeuzes. Gebruik originele woorden. Zorg dat het antwoord volledig is en nooit midden in een zin eindigt. Maximaal ongeveer 300 woorden.',es:'Analiza el hebreo/griego: palabras clave, etimología, gramática. Asegúrate de que la respuesta esté completa y nunca termine a mitad de una frase. Máximo unas 300 palabras.',tokens:1900},
  context:{en:'Biblical scholar. Explain this verse in its Biblical context: immediate passage, chapter theme, book purpose, and parallel passages including typology and cross-references. Make sure your answer is fully complete and every section you start is finished — never end mid-sentence. Aim for under 500 words total.',nl:'Bijbelse context: de passage, hoofdstuk, boek en parallelle teksten, typologie en kruisverwijzingen. Zorg dat het antwoord volledig is en elke sectie die je begint ook afmaakt — eindig nooit midden in een zin. Maximaal ongeveer 500 woorden.',es:'Contexto bíblico: pasaje, capítulo, libro y paralelos bíblicos. Asegúrate de que la respuesta esté completa y termines cada sección que empieces — nunca termines a mitad de una frase. Máximo unas 500 palabras.',tokens:3000},
  sda:{en:'SDA Adventist Reform Movement scholar. Explain how this verse relates to distinctive SDA teachings: Sabbath, health, sanctuary, three angels messages, great controversy, or character of God. Make sure your answer is fully complete — never end mid-sentence. Aim for under 300 words total.',nl:'SDA Reformatie perspectief: Sabbat, gezondheid, heiligdom, drie engelenboodschappen, grote strijd, karakter van God. Zorg dat het antwoord volledig is en nooit midden in een zin eindigt. Maximaal ongeveer 300 woorden.',es:'Perspectiva ASD: Sábado, salud, santuario, tres ángeles, gran conflicto. Asegúrate de que la respuesta esté completa y nunca termine a mitad de una frase. Máximo unas 300 palabras.',tokens:1900},
- perspectives:{en:'Show how different Christian traditions interpret this verse. Cover: Catholic, Lutheran, Reformed/Calvinist, Baptist, Pentecostal, and Eastern Orthodox views. Note where they agree and where they diverge. Make sure your answer is fully complete and every tradition you start covering is finished — never end mid-sentence. Aim for under 550 words total.',nl:'Verschillende christelijke tradities over dit vers: Katholiek, Luthers, Gereformeerd, Baptistisch, Pinksterbeweging, Oosters-Orthodox. Overeenkomsten en verschillen. Zorg dat het antwoord volledig is en elke traditie die je bespreekt ook afmaakt — eindig nooit midden in een zin. Maximaal ongeveer 550 woorden.',es:'Perspectivas cristianas: Católica, Luterana, Reformada, Bautista, Pentecostal, Ortodoxa Oriental. Acuerdos y diferencias. Asegúrate de que la respuesta esté completa — nunca termines a mitad de una frase. Máximo unas 550 palabras.',tokens:3200}
+ perspectives:{en:'Show how different Christian traditions interpret this verse. Cover: Catholic, Lutheran, Reformed/Calvinist, Baptist, Pentecostal, and Eastern Orthodox views. Note where they agree and where they diverge. Make sure your answer is fully complete and every tradition you start covering is finished — never end mid-sentence. Aim for under 550 words total.',nl:'Verschillende christelijke tradities over dit vers: Katholiek, Luthers, Gereformeerd, Baptistisch, Pinksterbeweging, Oosters-Orthodox. Overeenkomsten en verschillen. Zorg dat het antwoord volledig is en elke traditie die je bespreekt ook afmaakt — eindig nooit midden in een zin. Maximaal ongeveer 550 woorden.',es:'Perspectivas cristianas: Católica, Luterana, Reformada, Bautista, Pentecostal, Ortodoxa Oriental. Acuerdos y diferencias. Asegúrate de que la respuesta esté completa — nunca termines a mitad de una frase. Máximo unas 550 palabras.',tokens:3200},
+ jewish:{en:'Give the Jewish perspective on this verse: what the Rabbinic tradition says (Midrash, Talmud, Targum, Rashi, Ramban, Ibn Ezra, Maimonides and other classical commentators). For a New Testament verse, give the Jewish background instead: the Hebrew Bible passages it echoes, Second Temple and Rabbinic parallels, and how Jewish readers have understood the same idea. Quote only sources you are confident exist, name them (e.g. Bereshit Rabbah, b. Sanhedrin), and clearly say when you are uncertain or when the tradition is silent. Keep it concise and complete.',nl:'Geef het Joodse perspectief op dit vers: wat de rabbijnse traditie zegt (Midrasj, Talmoed, Targoem, Rasji, Ramban, Ibn Ezra, Maimonides en andere klassieke commentatoren). Bij een Nieuwtestamentisch vers: geef de Joodse achtergrond, namelijk de Hebreeuwse bijbelteksten waarnaar verwezen wordt, parallellen uit de Tweede-Tempeltijd en de rabbijnse literatuur, en hoe Joodse lezers hetzelfde idee begrepen hebben. Citeer alleen bronnen waarvan je zeker weet dat ze bestaan, noem ze bij naam (bijv. Bereshit Rabba, b. Sanhedrin) en zeg duidelijk wanneer je onzeker bent of de traditie zwijgt. Wees beknopt en volledig.',es:'Da la perspectiva judía sobre este versículo: lo que dice la tradición rabínica (Midrash, Talmud, Targum, Rashi, Rambán, Ibn Ezra, Maimónides y otros comentaristas clásicos). Si es un versículo del Nuevo Testamento, da el trasfondo judío: los pasajes de la Biblia hebrea que resuena, paralelos del Segundo Templo y de la literatura rabínica, y cómo los lectores judíos han entendido la misma idea. Cita solo fuentes de cuya existencia estés seguro, nómbralas (p. ej. Bereshit Rabá, b. Sanhedrín) y di claramente cuándo no estés seguro o cuando la tradición guarda silencio. Sé conciso y completo.',de:'Gib die jüdische Perspektive zu diesem Vers: was die rabbinische Tradition sagt (Midrasch, Talmud, Targum, Raschi, Ramban, Ibn Esra, Maimonides und andere klassische Kommentatoren). Bei einem Vers des Neuen Testaments: gib den jüdischen Hintergrund, nämlich die anklingenden Stellen der Hebräischen Bibel, Parallelen aus der Zeit des Zweiten Tempels und der rabbinischen Literatur sowie wie jüdische Leser denselben Gedanken verstanden haben. Zitiere nur Quellen, deren Existenz du sicher kennst, nenne sie beim Namen (z. B. Bereschit Rabba, b. Sanhedrin) und sage deutlich, wenn du unsicher bist oder die Tradition schweigt. Sei prägnant und vollständig.',tokens:1400}
  };
  var _mp=_modeMap[_modeKey]||_modeMap.devotional;
  var sysPrompts={en:_mp.en,nl:_mp.nl,es:_mp.es};
@@ -6381,6 +6388,7 @@ async function loadAI(key,btn,ldr,resp,ref,txt){
  _saveAIBtn.disabled=true;
  _saveAIBtn.style.color='var(--ink3)';
  _saveAIBtn.style.borderColor='var(--ink3)';
+ if(resp._onSaved)setTimeout(resp._onSaved,350);
  };
  resp.appendChild(_saveAIBtn);
  } else {
@@ -10258,7 +10266,7 @@ function renderHist(){
  var body=ge('histBody');body.innerHTML='';
  if(!histList.length){body.innerHTML='<div class="empty">'+T('no_hist')+'</div>';return;}
  var clrBtn=mk('button','');clrBtn.style.cssText='display:block;margin:8px 16px 4px auto;padding:4px 12px;background:none;border:1px solid var(--paper3);border-radius:8px;font-size:11px;color:var(--ink3);cursor:pointer;font-family:inherit';clrBtn.textContent=_X('Clear all','Borrar todo');clrBtn.onclick=function(){histList=[];saveData();renderHist();};body.appendChild(clrBtn);
- histList.slice().reverse().forEach(function(h){
+ histList.slice().forEach(function(h){ // list is stored newest-first
  var item=mk('div','hist-item');
  var ref=mk('div','hi-ref');ref.textContent=h.ref;
  var sub=mk('div','hi-trans');sub.textContent=(TRANS_LABELS[h.trans]||{}).short||h.trans;
@@ -12981,7 +12989,7 @@ function renderCommentary(){
  var pts=k.split('-');
  return parseInt(pts[0])===cmntBi&&parseInt(pts[1])===cmntCi;
  }).sort(function(a,b){return parseInt(a.split('-')[2])-parseInt(b.split('-')[2]);});
- var _aiModeLabels={devotional:'Devotional',language:'Original Language',context:'Bible Context',sda:'SDA Perspective',perspectives:'Other Views'};Object.keys(_aiModeLabels).forEach(function(k){_aiModeLabels[k]=_aiLbl(k,_aiModeLabels[k]);});
+ var _aiModeLabels={devotional:'Devotional',language:'Original Language',context:'Bible Context',sda:'SDA Perspective',perspectives:'Other Views',jewish:'Jewish Commentary'};Object.keys(_aiModeLabels).forEach(function(k){_aiModeLabels[k]=_aiLbl(k,_aiModeLabels[k]);});
  aiKeys.forEach(function(key){
  var pts=key.split('-');var vi=parseInt(pts[2]);var mode=pts[3]||'devotional';
  var txt=settings.aiNotes[key];if(!txt||!(''+txt).trim())return;
