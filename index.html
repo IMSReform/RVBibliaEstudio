@@ -1240,6 +1240,7 @@ body.chrome-hidden {
 #outlinePopup .outline-item:active { background:var(--paper2); }
 #outlinePopup .outline-item.l2 { padding-left:32px;color:var(--ink2); }
 #outlinePopup .outline-item.l3 { padding-left:44px;color:var(--ink3);font-size:12px; }
+#cmntTabs::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
@@ -3689,12 +3690,13 @@ var SANCTUARY_NL={"brandoffer": {"title": "Brandoffers — Overzicht", "body": "
  <button onclick="closeSheet('cmnt')" style="background:none;border:none;font-size:13px;font-weight:700;color:var(--teal2);cursor:pointer;font-family:inherit">&#8592; Close</button>
  <div style="flex:1;text-align:center;font-size:15px;font-weight:700;color:var(--ink1)">Commentaries</div>
  </div>
- <div style="display:flex;border-bottom:2px solid var(--paper3)">
- <button id="csrc-egw" onclick="setCmntSource('egw')" style="flex:1;background:none;border:none;border-bottom:2px solid var(--teal2);color:var(--teal2);font-weight:700;padding:7px 4px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">EGW</button>
- <button id="csrc-sda" onclick="setCmntSource('sda')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 4px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">SDA</button>
- <button id="csrc-sanctuary" onclick="setCmntSource('sanctuary')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 4px;font-size:11px;cursor:pointer;font-family:inherit;margin-bottom:-2px">Achtergrond</button>
- <button id="csrc-ai" onclick="setCmntSource('ai')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 4px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">AI</button>
- <button id="csrc-notes" onclick="setCmntSource('notes')" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 4px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">Notes</button>
+ <div id="cmntTabs" style="display:flex;border-bottom:2px solid var(--paper3);overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+ <button id="csrc-egw" onclick="setCmntSource('egw')" style="flex:1 0 auto;white-space:nowrap;background:none;border:none;border-bottom:2px solid var(--teal2);color:var(--teal2);font-weight:700;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">EGW</button>
+ <button id="csrc-sda" onclick="setCmntSource('sda')" style="flex:1 0 auto;white-space:nowrap;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">SDA</button>
+ <button id="csrc-sanctuary" onclick="setCmntSource('sanctuary')" style="flex:1 0 auto;white-space:nowrap;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 14px;font-size:11px;cursor:pointer;font-family:inherit;margin-bottom:-2px">Achtergrond</button>
+ <button id="csrc-ai" onclick="setCmntSource('ai')" style="flex:1 0 auto;white-space:nowrap;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">AI</button>
+ <button id="csrc-cristo" onclick="setCmntSource('cristo')" style="display:none;flex:1 0 auto;white-space:nowrap;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">Cristo</button>
+ <button id="csrc-notes" onclick="setCmntSource('notes')" style="flex:1 0 auto;white-space:nowrap;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink3);padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-2px">Notes</button>
  </div>
  <div style="display:flex;align-items:center;gap:6px;padding:8px 0 6px">
  <button onclick="cmntPrevChap()" style="background:var(--paper2);border:1px solid var(--paper3);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--teal2)">&lsaquo;</button>
@@ -6600,7 +6602,8 @@ function navToRef(ref){
 
 
 // ── ESTUDIOS SOBRE CRISTO (Apéndices A–C del Comentario bíblico adventista) ──
-var CRISTO=null,_cristoP=null,_cristoIdx=null,_cristoA=-1,_cristoS=-1,_cristoQ=-1;
+var CRISTO=null,_cristoP=null,_cristoIdx=null,_cristoA=-1,_cristoS=-1,_cristoQ=-1,_cristoHost=null;
+function _cb(){return _cristoHost||ge('cristoBody');}
 function _cristoLoad(){
  if(CRISTO)return Promise.resolve(CRISTO);
  if(!_cristoP)_cristoP=_fetchJSON('data/egw_cristo.json').then(function(d){
@@ -6642,9 +6645,9 @@ function _cristoChips(bi,ci,vi,host){
   host.appendChild(box);
  });
 }
-function openCristo(ai,si){_cristoA=ai;_cristoS=si;openSheet('cristo');}
+function openCristo(ai,si){_cristoHost=null;_cristoA=ai;_cristoS=si;openSheet('cristo');}
 function renderCristo(){
- var body=ge('cristoBody');if(!body)return;body.innerHTML='';
+ var body=_cb();if(!body)return;body.innerHTML='';
  var ttl=ge('cristoTitle');
  if(!CRISTO){
   var ld=mk('div','');ld.style.cssText='padding:40px 20px;text-align:center;color:var(--ink3);font-size:14px';ld.textContent='Cargando…';body.appendChild(ld);
@@ -6656,6 +6659,17 @@ function renderCristo(){
   var intro=mk('p','');intro.style.cssText='margin:14px 16px 4px;font-size:13px;line-height:1.6;color:var(--ink3)';
   intro.textContent='Compilación de las declaraciones de Elena G. de White sobre la divinidad de Cristo, su naturaleza en la encarnación y la expiación, de los apéndices del Comentario bíblico adventista. Cada tema se enlaza con versículos relacionados.';
   body.appendChild(intro);
+  if(_cristoHost&&_cristoIdx){
+   var _seen={},_hits=[];
+   Object.keys(_cristoIdx).forEach(function(k){var p=k.split('-');if(+p[0]===cmntBi&&+p[1]===cmntCi)_cristoIdx[k].forEach(function(x){var kk=x[0]+':'+x[1];if(!_seen[kk]){_seen[kk]=1;_hits.push(x);}});});
+   if(_hits.length){
+    var ch=mk('div','');ch.style.cssText='margin:14px 16px 6px;font-size:11px;font-weight:800;color:var(--teal2);text-transform:uppercase;letter-spacing:.6px';ch.textContent='En este cap\u00edtulo \u00b7 '+locBookName(cmntBi)+' '+(cmntCi+1);body.appendChild(ch);
+    _hits.forEach(function(x){var sc=CRISTO[x[0]].sections[x[1]];
+     var row=mk('div','');row.style.cssText='display:flex;align-items:center;gap:12px;margin:6px 16px;padding:11px 14px;background:rgba(34,163,154,.10);border:1px solid var(--teal2);border-radius:14px;cursor:pointer';
+     var t=mk('span','');t.style.cssText='flex:1;font-size:14px;line-height:1.4;color:var(--ink1)';t.textContent='Ap\u00e9ndice '+CRISTO[x[0]].id+' \u00b7 '+sc.n+'. '+sc.title;row.appendChild(t);
+     row.onclick=function(){_cristoA=x[0];_cristoS=x[1];renderCristo();_cb().scrollTop=0;try{if(_cristoHost&&_cristoHost.parentNode)_cristoHost.parentNode.scrollTop=0;}catch(e){}};body.appendChild(row);});
+   }
+  }
   CRISTO.forEach(function(a,ai){
    var h=mk('div','');h.style.cssText='margin:18px 16px 6px;font-size:11px;font-weight:800;color:var(--teal2);text-transform:uppercase;letter-spacing:.6px';
    h.textContent='Apéndice '+a.id+' · '+a.title;body.appendChild(h);
@@ -6667,7 +6681,7 @@ function renderCristo(){
     var t=mk('span','');t.style.cssText='flex:1;font-size:14px;line-height:1.4;color:var(--ink1)';t.textContent=sc.title;
     var c=mk('span','');c.style.cssText='font-size:11px;color:var(--ink3)';c.textContent=sc.quotes.length;
     row.appendChild(n);row.appendChild(t);row.appendChild(c);
-    row.onclick=function(){_cristoA=ai;_cristoS=si;renderCristo();ge('cristoBody').scrollTop=0;};
+    row.onclick=function(){_cristoA=ai;_cristoS=si;renderCristo();_cb().scrollTop=0;try{if(_cristoHost&&_cristoHost.parentNode)_cristoHost.parentNode.scrollTop=0;}catch(e){}};
     body.appendChild(row);
    });
   });
@@ -6698,13 +6712,13 @@ function renderCristo(){
   e.style.cssText='margin:0;font-size:var(--cfs,14px);line-height:1.85;color:var(--ink1);font-family:Roboto,system-ui,sans-serif;-webkit-user-select:text;user-select:text';
   card.appendChild(e);card.dataset.cq=qi;body.appendChild(card);
  });
- if(_cristoQ>=0){var _q=_cristoQ;_cristoQ=-1;setTimeout(function(){var c=document.querySelector('#cristoBody [data-cq="'+_q+'"]');if(c){c.scrollIntoView({block:'center',behavior:'smooth'});c.style.transition='background .4s';c.style.background='rgba(255,213,0,.25)';setTimeout(function(){c.style.background='';},1800);}},250);}
+ if(_cristoQ>=0){var _q=_cristoQ;_cristoQ=-1;setTimeout(function(){var c=_cb().querySelector('[data-cq="'+_q+'"]');if(c){c.scrollIntoView({block:'center',behavior:'smooth'});c.style.transition='background .4s';c.style.background='rgba(255,213,0,.25)';setTimeout(function(){c.style.background='';},1800);}},250);}
  // prev / next
  var flat=[];CRISTO.forEach(function(aa,ai2){aa.sections.forEach(function(ss,si2){flat.push([ai2,si2]);});});
  var pos=flat.findIndex(function(x){return x[0]===_cristoA&&x[1]===_cristoS;});
  var nav=mk('div','');nav.style.cssText='display:flex;gap:10px;margin:14px 16px 28px';
  function nb(txt,to){var b=mk('button','');b.style.cssText='flex:1;font-size:13px;font-weight:700;color:var(--teal2);background:var(--paper2);border:1px solid var(--paper3);border-radius:12px;padding:10px;cursor:pointer;font-family:inherit';b.textContent=txt;
-  if(!to){b.style.opacity='.35';b.disabled=true;}else b.onclick=function(){_cristoA=to[0];_cristoS=to[1];renderCristo();ge('cristoBody').scrollTop=0;};nav.appendChild(b);}
+  if(!to){b.style.opacity='.35';b.disabled=true;}else b.onclick=function(){_cristoA=to[0];_cristoS=to[1];renderCristo();_cb().scrollTop=0;try{if(_cristoHost&&_cristoHost.parentNode)_cristoHost.parentNode.scrollTop=0;}catch(e){}};nav.appendChild(b);}
  nb('‹ Anterior',pos>0?flat[pos-1]:null);nb('Siguiente ›',pos<flat.length-1?flat[pos+1]:null);
  body.appendChild(nav);
 }
@@ -12236,6 +12250,14 @@ var TRANS_LABELS={
 };
 
 function _splitWide(){return window.innerWidth>=1100||(window.innerWidth>window.innerHeight&&window.innerWidth>=560);}
+function _ensureSplitClose(){
+ var h=document.querySelector('.split-pane-hdr');
+ if(!h||document.getElementById('splitCloseBtn'))return;
+ var b=document.createElement('button');b.id='splitCloseBtn';b.type='button';b.textContent='\u2715';b.title='Close split screen';
+ b.style.cssText='margin-left:auto;min-width:32px;height:26px;padding:0 8px;border-radius:7px;border:1px solid var(--teal2);background:transparent;color:var(--teal2);font-weight:800;font-size:13px;cursor:pointer;position:relative;z-index:3';
+ b.onclick=function(e){e.stopPropagation();if(splitActive)toggleSplit();};
+ h.appendChild(b);
+}
 function toggleSplit(){
  splitActive=!splitActive;
  var btn=ge('splitBtn');
@@ -12249,6 +12271,7 @@ function toggleSplit(){
  splitEl.style.flexDirection='column';
  splitEl.style.flexShrink='0';
  btn&&btn.classList.add('on');
+ _ensureSplitClose();
  initSplitDrag();
  // Sync label to actual current translation
  var lbl=ge('splitTransLbl');
@@ -12446,8 +12469,26 @@ function applySplitOrientation(){
 
 (function(){
  var _t=null;
+ function recover(){
+ try{
+ var anyOpen=document.querySelector('.sheet.open');
+ var bd=document.getElementById('sheetBackdrop');
+ if(bd&&!anyOpen)bd.classList.remove('on');
+ var vp=document.getElementById('vamp');if(vp)vp.style.pointerEvents='';
+ if(typeof _selHandles!=='undefined'&&_selHandles){['start','end'].forEach(function(k){if(_selHandles[k])_selHandles[k].style.pointerEvents='';});}
+ var ov=document.getElementById('ovr');
+ if(ov&&ov.classList.contains('on')&&!document.querySelector('.drop.on,#transdrop.on,#settdrop.on,#outlinePopup[style*="block"]')&&!anyOpen){try{closeAllDrops();}catch(e){}}
+ if(typeof _chromeHidden!=='undefined'&&_chromeHidden){
+ var hd=document.querySelector('.hdr'),tb=document.getElementById('tbar'),nb=document.querySelector('.nb-wrap')||document.querySelector('nav');
+ if(hd)hd.style.transform='';if(tb)tb.style.transform='';if(nb)nb.style.transform='';
+ document.body.classList.remove('chrome-hidden');_chromeHidden=false;
+ }
+ }catch(e){}
+ }
+ window._uiRecover=recover;
  function relayout(){
  try{
+ recover();
  if(!splitActive)return;
  var sp=ge('splitPane');if(!sp)return;
  sp.style.width='';sp.style.height='';
@@ -12457,6 +12498,8 @@ function applySplitOrientation(){
  function sched(){clearTimeout(_t);_t=setTimeout(relayout,120);}
  window.addEventListener('resize',sched);
  window.addEventListener('orientationchange',function(){setTimeout(relayout,350);});
+ window.addEventListener('pageshow',function(){setTimeout(relayout,200);});
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(relayout,200);});
 })();
 function setSplitOrientation(o){
  splitOrientation=o;
@@ -13018,7 +13061,7 @@ function reopenCmntSearchResults(){
  var pill=ge('cmntSrBackPill');if(pill)pill.classList.remove('on');
 }
 
-function setCmntSource(src){cmntSource=src;var si=ge('cmntSearchInp');if(si)si.placeholder=_X('Search all commentaries...','Buscar en todos los comentarios...');if(si)si.value='';['egw','sda','sanctuary','ai','notes'].forEach(function(s){var btn=ge('csrc-'+s);if(!btn)return;btn.style.borderBottomColor=s===src?'var(--c2,var(--teal2))':'transparent';btn.style.color=s===src?'var(--teal2)':'var(--ink3)';btn.style.fontWeight=s===src?'700':'500';});renderCommentary();}
+function setCmntSource(src){cmntSource=src;var si=ge('cmntSearchInp');if(si)si.placeholder=_X('Search all commentaries...','Buscar en todos los comentarios...');if(si)si.value='';['egw','sda','sanctuary','ai','cristo','notes'].forEach(function(s){var btn=ge('csrc-'+s);if(!btn)return;btn.style.borderBottomColor=s===src?'var(--c2,var(--teal2))':'transparent';btn.style.color=s===src?'var(--teal2)':'var(--ink3)';btn.style.fontWeight=s===src?'700':'500';});renderCommentary();try{var _ab=ge('csrc-'+src);if(_ab&&_ab.scrollIntoView)_ab.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}catch(e){}}
 function openCmntPicker(){
  // Set picker mode to commentary navigation
  _pickerCtx='cmnt';
@@ -13059,6 +13102,12 @@ function renderCommentary(){
  var cc=ge('cmntSearchCount');if(cc)cc.textContent='';
  var btn=ge('cmntChapBtn');if(btn)btn.textContent=locBookName(cmntBi)+' '+(cmntCi+1);
  var list=ge('cmntList');if(!list)return;list.innerHTML='';
+ var _cbtn=ge('csrc-cristo');if(_cbtn)_cbtn.style.display=(LANG==='es')?'':'none';
+ if(cmntSource!=='cristo')_cristoHost=null;
+ if(cmntSource==='cristo'){
+ if(LANG!=='es'){cmntSource='egw';setCmntSource('egw');return;}
+ _cristoHost=list;renderCristo();return;
+ }
  if(cmntSource==='sda'){
  // SDA Bible Commentary — Spanish (SDABC_DATA_ES) when reading in RVR1960, English (SDABC_DATA) otherwise
  var _sdaData=(TRANS==='rvr1960'&&typeof SDABC_DATA_ES!=='undefined')?SDABC_DATA_ES:(typeof SDABC_DATA!=='undefined'?SDABC_DATA:undefined);
