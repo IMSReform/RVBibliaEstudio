@@ -3,9 +3,9 @@
 // - data/*.json: cache-first with background refresh, so each book works offline once it has been opened.
 // - After the first load the page asks this worker to download ALL book data in the background
 //   (message {type:'precache'}), so the whole Bible + commentaries work with no connection.
-var VERSION = 'v4';
+var VERSION = 'v5';
 var SHELL = 'rb-es-shell-' + VERSION;
-var DATA = 'rb-es-data-v1'; // data cache survives app-shell updates
+var DATA = 'rb-es-data-v2'; // data cache survives app-shell updates
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
